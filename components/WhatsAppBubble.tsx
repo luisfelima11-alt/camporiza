@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-const WA_NUMBER = '5567999509200'
+const WA_NUMBER = '556796330973'
 const WA_MESSAGE = encodeURIComponent('Olá! Vim pelo site da Camporiza e gostaria de solicitar um orçamento.')
 
 export default function WhatsAppBubble() {

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Phone, CheckCircle } from 'lucide-react'
 
-const WA_NUMBER = '5567999509200'
+const WA_NUMBER = '556796330973'
 const WA_MESSAGE = encodeURIComponent('Olá! Vim pelo site da Camporiza e gostaria de solicitar um orçamento.')
 
 const inputClass =
@@ -216,7 +216,7 @@ export default function Contact() {
 
             {/* Phone buttons */}
             <div className="flex flex-col gap-3">
-              {['(67) 99950-9200', '(67) 99259-2237'].map((number) => (
+              {['(67) 9633-0973'].map((number) => (
                 <motion.a
                   key={number}
                   href={`tel:+55${number.replace(/\D/g, '')}`}

@@ -68,7 +68,7 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-            <p className="text-[#6B7D6B] text-sm">(67) 99950-9200</p>
+            <p className="text-[#6B7D6B] text-sm">(67) 9633-0973</p>
             <p className="text-[#6B7D6B] text-sm">contato@camporiza.com.br</p>
           </div>
         </div>
