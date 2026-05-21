@@ -1,6 +1,6 @@
 'use client'
 
-import { Instagram, Facebook } from 'lucide-react'
+import { Instagram } from 'lucide-react'
 import LogoCamporiza from '@/components/LogoCamporiza'
 
 const navLinks = [
@@ -56,7 +56,6 @@ export default function Footer() {
             <div className="flex gap-3 mb-6">
               {[
                 { Icon: Instagram, label: 'Instagram', href: 'https://instagram.com/camporiza_' },
-                { Icon: Facebook, label: 'Facebook', href: '#' },
               ].map(({ Icon, label, href }) => (
                 <a
                   key={label}
