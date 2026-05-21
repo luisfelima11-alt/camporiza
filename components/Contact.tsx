@@ -60,7 +60,7 @@ export default function Contact() {
             Fale com um especialista
           </h2>
           <p className="text-gray-500 max-w-lg mx-auto leading-relaxed">
-            Preencha o formulário ou entre em contato diretamente pelo WhatsApp — respondemos em minutos.
+            Preencha o formulário ou entre em contato diretamente pelo WhatsApp. Respondemos em minutos.
           </p>
         </motion.div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, ChevronDown } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 const containerVariants = {
   hidden: {},
@@ -126,15 +126,6 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-8 hidden lg:flex items-center gap-3 text-[#6B7D6B] text-xs font-mono"
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <ChevronDown size={16} />
-        <span>scroll</span>
-      </motion.div>
     </section>
   )
 }

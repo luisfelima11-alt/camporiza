@@ -15,7 +15,7 @@ const reasons = [
     icon: Clock,
     title: 'Rapidez',
     description:
-      'Entre 10 e 20 ha por bateria. Os drones T40 e T50 são os mais produtivos do mercado — sua lavoura tratada no menor tempo possível.',
+      'Entre 10 e 20 ha por bateria. Os drones T40 e T50 são os mais produtivos do mercado, com sua lavoura tratada no menor tempo possível.',
   },
   {
     icon: Cpu,
@@ -27,7 +27,7 @@ const reasons = [
     icon: MapPin,
     title: 'Áreas de Difícil Acesso',
     description:
-      'A Camporiza nasceu exatamente para isso: chegar onde máquina convencional não consegue — encostas, beiras de mata, terrenos irregulares.',
+      'A Camporiza nasceu exatamente para isso: chegar onde máquina convencional não consegue. Encostas, beiras de mata, terrenos irregulares.',
   },
 ]
 
@@ -68,7 +68,7 @@ export default function WhyUs() {
             </p>
             <p className="text-[#6B7D6B] leading-relaxed mb-10">
               Em dois anos, já são mais de 30 produtores atendidos e 3 mil hectares pulverizados
-              em todo o Mato Grosso do Sul. Soja, milho, cana, eucalipto, pastagem — sem restrição de cultura ou tamanho de área.
+              em todo o Mato Grosso do Sul. Soja, milho, cana, eucalipto, pastagem. Sem restrição de cultura ou tamanho de área.
             </p>
             <motion.a
               href="#contato"

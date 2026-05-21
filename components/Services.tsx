@@ -27,7 +27,7 @@ const services = [
     icon: Leaf,
     title: 'Cana-de-Açúcar e Pastagem',
     description:
-      'Atendimento em canaviais e pastagens com drones que alcançam áreas de difícil acesso — exatamente como a Camporiza nasceu para fazer.',
+      'Atendimento em canaviais e pastagens com drones que chegam onde máquinas convencionais não conseguem. Foi exatamente para isso que a Camporiza nasceu.',
   },
   {
     icon: TreePine,
@@ -64,7 +64,7 @@ export default function Services() {
           </h2>
           <p className="text-gray-500 max-w-xl leading-relaxed">
             Com DJI Agras T40 e T50, a Camporiza atende desde 1 hectare até grandes propriedades
-            em todo o Mato Grosso do Sul — com profissionalismo e rapidez.
+            em todo o Mato Grosso do Sul, com profissionalismo e rapidez.
           </p>
         </motion.div>
 
