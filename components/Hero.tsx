@@ -62,7 +62,7 @@ export default function Hero() {
           >
             <span className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full animate-pulse" />
             <span className="text-[#4CAF50] text-xs font-mono tracking-widest uppercase">
-              Mato Grosso do Sul
+              Nova Andradina · Mato Grosso do Sul
             </span>
           </motion.div>
 
@@ -85,8 +85,8 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="mt-8 mb-10">
             <hr className="border-none h-px bg-gradient-to-r from-[#4CAF50]/50 to-transparent mb-6 w-32" />
             <p className="text-lg text-[#6B7D6B] leading-relaxed max-w-xl">
-              Pulverização agrícola com drones de alta performance no Mato Grosso do Sul.
-              Tecnologia GPS RTK para maximizar a produtividade da sua lavoura.
+              Pulverização de defensivos agrícolas e dispersão de sólidos com drones DJI Agras T40 e T50
+              em todo o Mato Grosso do Sul. Soja, milho, cana, eucalipto, pastagem e muito mais.
             </p>
           </motion.div>
 
@@ -116,7 +116,7 @@ export default function Hero() {
             variants={itemVariants}
             className="mt-14 flex flex-wrap gap-6 text-[#6B7D6B] text-xs font-mono uppercase tracking-widest"
           >
-            {['ANAC Certificado', 'GPS RTK', 'Cobertura Total MS', 'Suporte 24h'].map((t) => (
+            {['DJI Agras T40 & T50', 'A partir de 1 ha', 'R$75–R$125/ha', 'Todo o MS'].map((t) => (
               <span key={t} className="flex items-center gap-2">
                 <span className="w-1 h-1 bg-[#4CAF50] rounded-full" />
                 {t}

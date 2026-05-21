@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 
 const stats = [
-  { value: 15000, prefix: '', suffix: '+', label: 'Hectares Pulverizados' },
-  { value: 250, prefix: '', suffix: '+', label: 'Clientes Atendidos' },
-  { value: 98, prefix: '', suffix: '%', label: 'Eficiência Operacional' },
-  { value: 5, prefix: '+', suffix: ' anos', label: 'de Experiência' },
+  { value: 3000, prefix: '', suffix: '+', label: 'Hectares Pulverizados' },
+  { value: 30, prefix: '', suffix: '+', label: 'Produtores Atendidos' },
+  { value: 2, prefix: '', suffix: ' anos', label: 'de Experiência' },
+  { value: 2, prefix: '', suffix: ' drones', label: 'DJI Agras T40/T50' },
 ]
 
 function AnimatedCounter({ value, prefix, suffix }: { value: number; prefix: string; suffix: string }) {

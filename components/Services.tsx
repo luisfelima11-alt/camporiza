@@ -2,44 +2,44 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Plane, Eye, Map, BarChart3, Shield, Clock } from 'lucide-react'
+import { Droplets, Wind, Leaf, Wheat, TreePine, Clock } from 'lucide-react'
 
 const services = [
   {
-    icon: Plane,
-    title: 'Pulverização de Precisão',
+    icon: Droplets,
+    title: 'Pulverização de Defensivos',
     description:
-      'Aplicação de defensivos e fertilizantes com precisão milimétrica, reduzindo desperdício e maximizando a eficiência do produto em cada metro da lavoura.',
+      'Aplicação de herbicidas, fungicidas e inseticidas com drones DJI Agras T40 e T50. Faixa de 7 a 11 metros e capacidade de 40 litros por tanque.',
   },
   {
-    icon: Map,
-    title: 'Mapeamento Aéreo',
+    icon: Wind,
+    title: 'Dispersão de Sólidos',
     description:
-      'Levantamento topográfico e mapeamento completo da sua propriedade com imagens em alta resolução e precisão centimétrica.',
+      'Distribuição aérea de fertilizantes sólidos, sementes e outros insumos granulados com precisão e eficiência em qualquer tipo de terreno.',
   },
   {
-    icon: Eye,
-    title: 'Monitoramento de Lavouras',
+    icon: Wheat,
+    title: 'Soja e Milho',
     description:
-      'Supervisão periódica com análise de imagens multiespectrais para detecção precoce de pragas, doenças e deficiências nutricionais.',
+      'Especialistas nas principais culturas do MS. Controle de pragas, doenças e plantas daninhas com aplicação no momento certo da cultura.',
   },
   {
-    icon: BarChart3,
-    title: 'Relatórios e Análises',
+    icon: Leaf,
+    title: 'Cana-de-Açúcar e Pastagem',
     description:
-      'Laudos técnicos detalhados com dados precisos sobre cada operação, auxiliando no planejamento e tomada de decisão agrícola.',
+      'Atendimento em canaviais e pastagens com drones que alcançam áreas de difícil acesso — exatamente como a Camporiza nasceu para fazer.',
   },
   {
-    icon: Shield,
-    title: 'Aplicação Segura',
+    icon: TreePine,
+    title: 'Eucalipto e Florestas',
     description:
-      'Operações realizadas com total segurança, seguindo todas as normas da ANAC e MAPA para voos agrícolas com drones.',
+      'Pulverização em plantações florestais com alta produtividade: entre 10 e 20 ha por bateria, economizando tempo e mão de obra.',
   },
   {
     icon: Clock,
-    title: 'Atendimento Ágil',
+    title: 'Atendimento a partir de 1 ha',
     description:
-      'Resposta rápida e programação eficiente para atender sua lavoura no momento certo, sem atrasos que comprometam sua produção.',
+      'Nenhuma área é pequena demais. Atendemos desde 1 hectare com preço justo entre R$75 e R$125 por ha, dependendo do serviço e localização.',
   },
 ]
 
@@ -60,11 +60,11 @@ export default function Services() {
             Nossos Serviços
           </span>
           <h2 className="text-3xl sm:text-4xl font-black text-[#0D1A0D] mt-3 mb-4">
-            Soluções completas para sua lavoura
+            O drone certo para cada lavoura
           </h2>
           <p className="text-gray-500 max-w-xl leading-relaxed">
-            Tecnologia de ponta e equipe especializada para garantir máxima produtividade e
-            segurança em cada operação.
+            Com DJI Agras T40 e T50, a Camporiza atende desde 1 hectare até grandes propriedades
+            em todo o Mato Grosso do Sul — com profissionalismo e rapidez.
           </p>
         </motion.div>
 

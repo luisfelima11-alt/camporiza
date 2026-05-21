@@ -2,32 +2,32 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Zap, Leaf, Award, Headphones } from 'lucide-react'
+import { Zap, Cpu, MapPin, Clock } from 'lucide-react'
 
 const reasons = [
   {
     icon: Zap,
-    title: 'Tecnologia de Ponta',
+    title: 'Profissionalismo',
     description:
-      'Drones da mais alta geração com sistema GPS RTK centimétrico, garantindo precisão incomparável a cada voo.',
+      'Omar e Pedro trazem dedicação total a cada serviço. Pontualidade, transparência e comprometimento com o resultado do produtor.',
   },
   {
-    icon: Leaf,
-    title: 'Agricultura Sustentável',
+    icon: Clock,
+    title: 'Rapidez',
     description:
-      'Redução de até 60% no uso de água e defensivos comparado à pulverização convencional.',
+      'Entre 10 e 20 ha por bateria. Os drones T40 e T50 são os mais produtivos do mercado — sua lavoura tratada no menor tempo possível.',
   },
   {
-    icon: Award,
-    title: 'Certificados e Regulamentados',
+    icon: Cpu,
+    title: 'DJI Agras T40 & T50',
     description:
-      'Equipe habilitada pela ANAC e MAPA com todas as certificações exigidas para operação segura e legal.',
+      'Equipamentos de última geração com tanque de 40 litros, faixa de até 11 metros e tecnologia de atomização ativa.',
   },
   {
-    icon: Headphones,
-    title: 'Suporte Especializado',
+    icon: MapPin,
+    title: 'Áreas de Difícil Acesso',
     description:
-      'Acompanhamento técnico antes, durante e após cada serviço com engenheiros agrônomos parceiros.',
+      'A Camporiza nasceu exatamente para isso: chegar onde máquina convencional não consegue — encostas, beiras de mata, terrenos irregulares.',
   },
 ]
 
@@ -59,16 +59,16 @@ export default function WhyUs() {
               Por que a Camporiza?
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#F2F7F2] mt-3 mb-6 leading-tight">
-              Liderança em drones agrícolas no Mato Grosso do Sul
+              Fundada em Nova Andradina, voando em todo o MS
             </h2>
             <p className="text-[#6B7D6B] text-lg leading-relaxed mb-4">
-              A Camporiza nasceu da paixão pela agricultura e pela inovação tecnológica.
-              Combinamos expertise agronômica com equipamentos de última geração para oferecer
-              serviços que realmente fazem diferença no campo.
+              A Camporiza nasceu em 2024 da necessidade de maquinário de pulverização em áreas de
+              difícil acesso. Omar e Pedro viram o problema de perto e decidiram resolvê-lo com
+              a tecnologia mais avançada disponível.
             </p>
             <p className="text-[#6B7D6B] leading-relaxed mb-10">
-              Atendemos produtores rurais em todo o Mato Grosso do Sul, desde pequenas
-              propriedades familiares até grandes fazendas de produção em escala industrial.
+              Em dois anos, já são mais de 30 produtores atendidos e 3 mil hectares pulverizados
+              em todo o Mato Grosso do Sul. Soja, milho, cana, eucalipto, pastagem — sem restrição de cultura ou tamanho de área.
             </p>
             <motion.a
               href="#contato"
