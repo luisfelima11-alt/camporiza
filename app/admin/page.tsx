@@ -87,8 +87,8 @@ function PinGate({ onAuth }: { onAuth: () => void }) {
   return (
     <div className="min-h-screen bg-[#0A0E0A] flex items-center justify-center px-4">
       <div className="bg-[#111811] border border-white/8 rounded-2xl p-8 w-full max-w-sm text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mx-auto mb-5">
-          <Target size={24} className="text-[#4CAF50]" />
+        <div className="w-24 h-24 rounded-2xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mx-auto mb-5 overflow-hidden">
+          <img src="/logo.png" alt="Camporiza" className="w-full h-full object-contain p-2" />
         </div>
         <h1 className="text-xl font-black text-[#F2F7F2] mb-1">Admin Camporiza</h1>
         <p className="text-[#6B7D6B] text-sm mb-6">Digite o PIN de acesso</p>
