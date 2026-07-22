@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Check, Phone, ChevronDown, X, TrendingUp, TrendingDown, DollarSign, Users, Target, CheckSquare, Edit2, CalendarClock, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2, Check, Phone, ChevronDown, X, TrendingUp, TrendingDown, DollarSign, Users, Target, CheckSquare, Edit2, CalendarClock, AlertTriangle, Home, MapPin, Wheat, Sprout, Smartphone } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────
 type Tab = 'home' | 'prospects' | 'clientes' | 'financeiro'
@@ -116,8 +116,14 @@ function PinGate({ onAuth }: { onAuth: () => void }) {
 function HomeTab() {
   const [todos, setTodos] = useState<Todo[]>(() => JSON.parse(localStorage.getItem('todos') || '[]'))
   const [metas, setMetas] = useState<Meta[]>(() => JSON.parse(localStorage.getItem('metas') || '[]'))
+  const [lancs] = useState<Lancamento[]>(() => JSON.parse(localStorage.getItem('lancamentos') || '[]'))
   const [novoTodo, setNovoTodo] = useState('')
   const [novaMeta, setNovaMeta] = useState({ texto: '', meta: '' })
+
+  const mesAtual = new Date().toISOString().slice(0, 7)
+  const faturamentoMes = lancs.filter(l => l.tipo === 'receita' && l.data.startsWith(mesAtual)).reduce((s, l) => s + l.valor, 0)
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const mesNome = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 
   const save = (key: string, val: unknown) => localStorage.setItem(key, JSON.stringify(val))
 
@@ -151,7 +157,14 @@ function HomeTab() {
   const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
+      {/* Faturamento do mês */}
+      <div className="bg-gradient-to-br from-[#4CAF50]/15 via-[#111811] to-[#111811] border border-[#4CAF50]/25 rounded-2xl p-8 text-center">
+        <p className="text-[#6B7D6B] text-xs sm:text-sm uppercase tracking-widest font-bold mb-3">Faturamento de {mesNome}</p>
+        <p className="text-5xl sm:text-6xl lg:text-7xl font-black text-[#4CAF50] tracking-tight leading-none">{fmt(faturamentoMes)}</p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
       {/* To-do */}
       <div className="bg-[#111811] border border-white/8 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
@@ -222,6 +235,7 @@ function HomeTab() {
             )
           })}
         </ul>
+      </div>
       </div>
     </div>
   )
@@ -320,10 +334,10 @@ function CrmTab({ storageKey, titulo }: { storageKey: string, titulo: string }) 
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLOR[l.status]}`}>{STATUS_LABEL[l.status]}</span>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-[#6B7D6B]">
-                  {l.cidade && <span>📍 {l.cidade}</span>}
-                  {l.hectares && <span>🌾 {l.hectares}</span>}
-                  {l.cultura && <span>🌱 {l.cultura}</span>}
-                  {l.whatsapp && <span>📱 {l.whatsapp}</span>}
+                  {l.cidade && <span className="flex items-center gap-1"><MapPin size={12} className="text-[#4CAF50]" /> {l.cidade}</span>}
+                  {l.hectares && <span className="flex items-center gap-1"><Wheat size={12} className="text-[#4CAF50]" /> {l.hectares}</span>}
+                  {l.cultura && <span className="flex items-center gap-1"><Sprout size={12} className="text-[#4CAF50]" /> {l.cultura}</span>}
+                  {l.whatsapp && <span className="flex items-center gap-1"><Smartphone size={12} className="text-[#4CAF50]" /> {l.whatsapp}</span>}
                 </div>
                 {l.notas && <p className="text-xs text-[#6B7D6B]/70 mt-1 truncate">{l.notas}</p>}
               </div>
@@ -601,11 +615,11 @@ function FinanceiroTab() {
 }
 
 // ── MAIN ───────────────────────────────────────────────────────────
-const TABS: { id: Tab, label: string, icon: string }[] = [
-  { id: 'home', label: 'Home', icon: '🏠' },
-  { id: 'prospects', label: 'Prospects', icon: '🎯' },
-  { id: 'clientes', label: 'Clientes', icon: '✅' },
-  { id: 'financeiro', label: 'Financeiro', icon: '💰' },
+const TABS: { id: Tab, label: string, icon: React.ElementType }[] = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'prospects', label: 'Prospects', icon: Target },
+  { id: 'clientes', label: 'Clientes', icon: CheckSquare },
+  { id: 'financeiro', label: 'Financeiro', icon: DollarSign },
 ]
 
 export default function AdminPage() {
@@ -636,7 +650,7 @@ export default function AdminPage() {
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${tab === t.id ? 'bg-[#4CAF50]/15 text-[#4CAF50]' : 'text-[#6B7D6B] hover:text-[#F2F7F2]'}`}>
-                <span>{t.icon}</span>
+                <t.icon size={15} />
                 <span className="hidden sm:inline">{t.label}</span>
               </button>
             ))}
