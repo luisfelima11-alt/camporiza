@@ -523,18 +523,18 @@ function FinanceiroTab() {
   return (
     <div className="space-y-5">
       {/* Cards resumo */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: 'Faturamento', valor: receitas, icon: TrendingUp, cor: 'text-green-400', bg: 'bg-green-500/10' },
           { label: 'Custos', valor: custos, icon: TrendingDown, cor: 'text-red-400', bg: 'bg-red-500/10' },
           { label: 'Lucro líquido', valor: lucro, icon: DollarSign, cor: lucro >= 0 ? 'text-[#4CAF50]' : 'text-red-400', bg: lucro >= 0 ? 'bg-[#4CAF50]/10' : 'bg-red-500/10' },
         ].map(c => (
-          <div key={c.label} className="bg-[#111811] border border-white/8 rounded-2xl p-5">
+          <div key={c.label} className="bg-[#111811] border border-white/8 rounded-2xl p-5 min-w-0">
             <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center mb-3`}>
               <c.icon size={18} className={c.cor} />
             </div>
             <p className="text-[#6B7D6B] text-xs mb-1">{c.label}</p>
-            <p className={`text-xl font-black ${c.cor}`}>{fmt(c.valor)}</p>
+            <p className={`text-xl font-black ${c.cor} truncate`}>{fmt(c.valor)}</p>
           </div>
         ))}
       </div>
