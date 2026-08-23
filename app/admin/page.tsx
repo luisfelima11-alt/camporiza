@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Check, Phone, ChevronDown, X, TrendingUp, TrendingDown, DollarSign, Users, Target, CheckSquare, Edit2, CalendarClock, AlertTriangle, Home, MapPin, Wheat, Sprout, Smartphone } from 'lucide-react'
+import { asset } from '@/lib/assets'
 
 // ── Types ──────────────────────────────────────────────────────────
 type Tab = 'home' | 'prospects' | 'clientes' | 'financeiro'
@@ -77,7 +78,7 @@ const lbl = 'block text-xs font-semibold text-[#6B7D6B] mb-1 uppercase tracking-
 function PinGate({ onAuth }: { onAuth: () => void }) {
   const [pin, setPin] = useState('')
   const [erro, setErro] = useState(false)
-  const CORRECT = '1234'
+  const CORRECT = '7390'
 
   const check = () => {
     if (pin === CORRECT) { onAuth() }
@@ -88,7 +89,7 @@ function PinGate({ onAuth }: { onAuth: () => void }) {
     <div className="min-h-screen bg-[#0A0E0A] flex items-center justify-center px-4">
       <div className="bg-[#111811] border border-white/8 rounded-2xl p-8 w-full max-w-sm text-center">
         <div className="w-24 h-24 rounded-2xl bg-[#4CAF50]/10 border border-[#4CAF50]/20 flex items-center justify-center mx-auto mb-5 overflow-hidden">
-          <img src="/logo.png" alt="Camporiza" className="w-full h-full object-contain p-2" />
+          <img src={asset('/logo.png')} alt="Camporiza" className="w-full h-full object-contain p-2" />
         </div>
         <h1 className="text-xl font-black text-[#F2F7F2] mb-1">Admin Camporiza</h1>
         <p className="text-[#6B7D6B] text-sm mb-6">Digite o PIN de acesso</p>
@@ -106,7 +107,6 @@ function PinGate({ onAuth }: { onAuth: () => void }) {
         <button onClick={check} className="w-full py-3 rounded-xl bg-[#4CAF50] text-white font-bold hover:bg-[#3d9e42] transition-colors">
           Entrar
         </button>
-        <p className="text-[#6B7D6B]/40 text-xs mt-4">PIN padrão: 1234</p>
       </div>
     </div>
   )
@@ -643,7 +643,7 @@ export default function AdminPage() {
       <header className="bg-[#111811] border-b border-white/8 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 flex items-center gap-4 h-14">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Camporiza" className="w-7 h-7 rounded-full object-contain" />
+            <img src={asset('/logo.png')} alt="Camporiza" className="w-7 h-7 rounded-full object-contain" />
             <span className="font-black text-[#F2F7F2] text-sm">CAMPO<span className="text-[#4CAF50]">RIZA</span> <span className="text-[#6B7D6B] font-normal">Admin</span></span>
           </div>
           <nav className="flex gap-1 ml-4">

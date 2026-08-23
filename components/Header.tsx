@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import LogoCamporiza from '@/components/LogoCamporiza'
+import { asset } from '@/lib/assets'
 
 const navLinks = [
   { href: '#sobre', label: 'Sobre' },
@@ -36,7 +37,7 @@ export default function Header() {
           {/* Logo */}
           <motion.a href="#" className="flex items-center gap-2.5" whileHover={{ scale: 1.04 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Camporiza" className="w-11 h-11 object-contain rounded-full" />
+            <img src={asset('/logo.png')} alt="Camporiza" className="w-11 h-11 object-contain rounded-full" />
             <div className="leading-none hidden sm:block">
               <div className="text-white font-black text-xl tracking-wide">
                 CAMPO<span className="text-[#4CAF50]">RIZA</span>

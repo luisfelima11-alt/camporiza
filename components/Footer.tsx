@@ -2,6 +2,7 @@
 
 import { Instagram } from 'lucide-react'
 import LogoCamporiza from '@/components/LogoCamporiza'
+import { asset } from '@/lib/assets'
 
 const navLinks = [
   { href: '#sobre', label: 'Sobre' },
@@ -19,7 +20,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Camporiza" className="w-10 h-10 object-contain rounded-full" />
+              <img src={asset('/logo.png')} alt="Camporiza" className="w-10 h-10 object-contain rounded-full" />
               <div className="font-black text-xl text-[#F2F7F2]">
                 CAMPO<span className="text-[#4CAF50]">RIZA</span>
               </div>
