@@ -26,7 +26,12 @@ assert.equal(restored[id].approved, true)
 assert.notEqual(defaultPlanner(), defaultPlanner())
 assert.equal(CONTENT.filter(p => p.publication).length, 3)
 assert.equal(CONTENT.filter(p => p.scheduled).length, 1)
-assert.equal(CONTENT.length, 7)
+assert.equal(CONTENT.length, 12)
+assert.equal(CONTENT.find(p => p.id === '2026-09-26-janela').assets.length, 1)
+assert.equal(CONTENT.find(p => p.id === '2026-09-29-planejamento').assets.length, 3)
+assert.equal(CONTENT.find(p => p.id === '2026-10-03-tecnologia').assets.length, 1)
+assert.equal(CONTENT.find(p => p.id === 'reels-preparo-ao-voo').assetUrl.includes('1oi9kpxQjooUGnj3cawB4oTYjjFFmDNQP'), true)
+assert.equal(CONTENT.some(p => p.caption.includes('(67) 9633-0973')), false)
 const legacy = defaultPlanner()
 legacy['institucional-5mil'].status = 'revisao'
 legacy['institucional-5mil'].notes = 'Manter nota existente'

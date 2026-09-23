@@ -17,6 +17,7 @@ export default function MarketingPlanner() {
   const fileInput = useRef<HTMLInputElement>(null)
   const detail = useRef<HTMLElement>(null)
   const current = CONTENT.find(p => p.id === selectedId) ?? CONTENT[0]
+  const currentAssets = current.assets ?? current.scheduled?.assets ?? []
   const state = progress[current.id]
   const visible = CONTENT.filter(p => filter === 'todos' || statusFor(p, progress[p.id]) === filter)
   const feedPieces = visible
@@ -142,14 +143,16 @@ export default function MarketingPlanner() {
                   ? `${published ? 'Publicado' : 'Planejado'} em ${progress[piece.id].date.split('-').reverse().join('/')}`
                   : piece.scheduled
                     ? `Feed ${piece.scheduled.feedDate}`
-                    : 'Data a definir'
+                    : piece.plannedDate
+                      ? `Sugestão: ${piece.plannedDate}`
+                      : 'Data a definir'
               return <article key={piece.id} className={styles.feedItem} data-selected={piece.id === selectedId} data-published={published}>
                 <button type="button" className={styles.feedOpen} aria-label={`Abrir briefing de ${piece.title}`} onClick={() => openPiece(piece.id)}>
                   <div className={`${styles.feedVisual} ${styles[piece.cover]}`}>
                     {piece.publication
                       ? <img src={piece.publication.screenshot} alt={`Publicação ${piece.title}`} loading="lazy" />
-                      : piece.scheduled
-                        ? <img src={piece.scheduled.assets[0].src} alt={`Arte planejada: ${piece.title}`} loading="lazy" />
+                      : piece.previewImage || piece.assets?.[0] || piece.scheduled
+                        ? <img src={piece.previewImage ?? piece.assets?.[0]?.src ?? piece.scheduled!.assets[0].src} alt={`Arte planejada: ${piece.title}`} loading="lazy" />
                         : <><span className={styles.feedFormat}>{piece.format.includes('Reels') ? <Film size={11} /> : <LayoutGrid size={11} />}{piece.format}</span><strong>{piece.headline}</strong><small>{piece.pillar}</small></>}
                     <span className={styles.feedState} data-status={pieceStatus}>{published ? 'NO AR' : progress[piece.id].approved ? 'APROVADO' : 'PLANEJADO'}</span>
                     <span className={styles.feedKind}>{piece.format.includes('Reels') ? <Film size={14} /> : <Images size={14} />}</span>
@@ -205,9 +208,9 @@ export default function MarketingPlanner() {
             <label>{current.publication ? 'Data planejada (registro)' : 'Data planejada'}<input aria-label="Data planejada" type="date" value={state.date} onChange={e => update({ date: e.target.value })} onInput={e => update({ date: e.currentTarget.value })} onBlur={e => { if (e.currentTarget.value !== state.date) update({ date: e.currentTarget.value }) }} /></label>
           </fieldset>
           <p className={styles.hint}>{current.publication ? 'A data planejada preserva o registro interno; não comprova quando o post foi publicado.' : 'Organização interna. Não agenda nem publica no Instagram.'}</p>
-          {current.scheduled && <div className={styles.assetGallery}>
-            <div className={styles.assetGalleryHeading}><h4>Artes prontas</h4><span>{current.scheduled.assets.length} arquivos</span></div>
-            <div className={styles.assetGrid}>{current.scheduled.assets.map(asset => <a key={asset.src} href={asset.src} target="_blank" rel="noreferrer" aria-label={`Abrir ${asset.label}`}>
+          {currentAssets.length > 0 && <div className={styles.assetGallery}>
+            <div className={styles.assetGalleryHeading}><h4>Artes para revisão</h4><span>{currentAssets.length} arquivos</span></div>
+            <div className={styles.assetGrid}>{currentAssets.map(asset => <a key={asset.src} href={asset.src} target="_blank" rel="noreferrer" aria-label={`Abrir ${asset.label}`}>
               <img src={asset.src} alt={asset.label} loading="lazy" />
               <span>{asset.format}</span><strong>{asset.label}</strong>
             </a>)}</div>
