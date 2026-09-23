@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Check, Phone, ChevronDown, X, TrendingUp, TrendingDown, DollarSign, Users, Target, CheckSquare, Edit2, CalendarClock, AlertTriangle, Home, MapPin, Wheat, Sprout, Smartphone } from 'lucide-react'
+import { Plus, Trash2, Check, Phone, ChevronDown, X, TrendingUp, TrendingDown, DollarSign, Users, Target, CheckSquare, Edit2, CalendarClock, AlertTriangle, Home, MapPin, Wheat, Sprout, Smartphone, Megaphone } from 'lucide-react'
+import MarketingTab from './MarketingTab'
 
 // ── Types ──────────────────────────────────────────────────────────
-type Tab = 'home' | 'prospects' | 'clientes' | 'financeiro'
+type Tab = 'marketing' | 'home' | 'prospects' | 'clientes' | 'financeiro'
 
 type Status = 'novo' | 'contato' | 'proposta' | 'negociacao' | 'fechado' | 'perdido'
 
@@ -616,6 +617,7 @@ function FinanceiroTab() {
 
 // ── MAIN ───────────────────────────────────────────────────────────
 const TABS: { id: Tab, label: string, icon: React.ElementType }[] = [
+  { id: 'marketing', label: 'Marketing', icon: Megaphone },
   { id: 'home', label: 'Home', icon: Home },
   { id: 'prospects', label: 'Prospects', icon: Target },
   { id: 'clientes', label: 'Clientes', icon: CheckSquare },
@@ -624,7 +626,7 @@ const TABS: { id: Tab, label: string, icon: React.ElementType }[] = [
 
 export default function AdminPage() {
   const [auth, setAuth] = useState(false)
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTab] = useState<Tab>('marketing')
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_auth') === '1') setAuth(true)
@@ -641,22 +643,37 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#0A0E0A]">
       {/* Header */}
       <header className="bg-[#111811] border-b border-white/8 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 flex items-center gap-4 h-14">
-          <div className="flex items-center gap-2">
+        <div className="max-w-6xl mx-auto px-4 flex items-center gap-3 h-14">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/logo.png" alt="Camporiza" className="w-7 h-7 rounded-full object-contain" />
-            <span className="font-black text-[#F2F7F2] text-sm">CAMPO<span className="text-[#4CAF50]">RIZA</span> <span className="text-[#6B7D6B] font-normal">Admin</span></span>
+            <span className="font-black text-[#F2F7F2] text-sm">CAMPO<span className="text-[#4CAF50]">RIZA</span> <span className="hidden sm:inline text-[#6B7D6B] font-normal">Admin</span></span>
           </div>
-          <nav className="flex gap-1 ml-4">
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${tab === t.id ? 'bg-[#4CAF50]/15 text-[#4CAF50]' : 'text-[#6B7D6B] hover:text-[#F2F7F2]'}`}>
-                <t.icon size={15} />
-                <span className="hidden sm:inline">{t.label}</span>
-              </button>
-            ))}
+          {/* Rola na horizontal quando as 5 abas não cabem (telas estreitas). */}
+          <nav aria-label="Áreas do admin" className="flex items-center gap-1 min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {TABS.map(t => {
+              const ativa = tab === t.id
+              // Marketing é a aba central do painel: acento próprio e rótulo sempre visível.
+              const principal = t.id === 'marketing'
+              return (
+                <div key={t.id} className="flex items-center flex-shrink-0">
+                  <button onClick={() => setTab(t.id)}
+                    aria-label={t.label}
+                    aria-current={ativa ? 'page' : undefined}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
+                      ativa
+                        ? principal ? 'bg-[#8CC63F]/15 text-[#8CC63F]' : 'bg-[#4CAF50]/15 text-[#4CAF50]'
+                        : 'text-[#6B7D6B] hover:text-[#F2F7F2]'
+                    }`}>
+                    <t.icon size={15} />
+                    <span className={principal ? '' : 'hidden sm:inline'}>{t.label}</span>
+                  </button>
+                  {principal && <span className="w-px h-5 bg-white/10 mx-1.5" aria-hidden />}
+                </div>
+              )
+            })}
           </nav>
           <button onClick={() => { sessionStorage.removeItem('admin_auth'); setAuth(false) }}
-            className="ml-auto text-xs text-[#6B7D6B] hover:text-[#F2F7F2] transition-colors">
+            className="flex-shrink-0 text-xs text-[#6B7D6B] hover:text-[#F2F7F2] transition-colors">
             Sair
           </button>
         </div>
@@ -664,6 +681,7 @@ export default function AdminPage() {
 
       {/* Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {tab === 'marketing' && <MarketingTab />}
         {tab === 'home' && <HomeTab />}
         {tab === 'prospects' && <CrmTab storageKey="prospects" titulo="Prospects" />}
         {tab === 'clientes' && <CrmTab storageKey="clientes" titulo="Clientes" />}
