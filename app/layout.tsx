@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   description:
     'Pulverização agrícola com drones de alta performance no Mato Grosso do Sul. Precisão milimétrica, tecnologia GPS RTK e equipe certificada ANAC.',
   keywords: 'pulverização agrícola, drones agrícolas, Mato Grosso do Sul, agro drone, pulverização de precisão',
+  icons: {
+    icon: [
+      { url: '/favicon.ico?v=camporiza-1', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png', sizes: '150x150' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
