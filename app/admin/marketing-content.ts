@@ -1,6 +1,8 @@
-export type ProductionStatus = 'ideia' | 'producao' | 'revisao' | 'agendado' | 'publicado'
+export type ProductionStatus = 'ideia' | 'producao' | 'revisao' | 'refazer' | 'agendado' | 'publicado'
+export const NEXT_FEED_IDS = ['2026-09-29-planejamento', 'reels-por-tras-de-cada-voo', '2026-10-06-area-pequena']
+export const STORIES_APPROVAL_URL = 'https://drive.google.com/drive/folders/1UP8cX1655bXtGn3ycOVnDMADuvF39v2t'
 export const STATUS_LABELS: Record<ProductionStatus, string> = {
-  ideia: 'Planejado', producao: 'Em produção', revisao: 'Em revisão', agendado: 'Agendado', publicado: 'Publicado',
+  ideia: 'Planejado', producao: 'Em produção', revisao: 'Em revisão', refazer: 'Refazer arte', agendado: 'Agendado', publicado: 'Publicado',
 }
 export interface ScheduledContent {
   feedDate: string; storiesDate: string; driveUrl: string; packageUrl: string;
@@ -11,14 +13,22 @@ export interface ContentPiece {
   headline: string; objective: string; direction: string; caption: string; script: string[];
   initialStatus: ProductionStatus; assetUrl?: string; assetLabel?: string;
   plannedDate?: string; previewImage?: string;
-  assets?: { src: string; label: string; format: 'Feed 3:4' | 'Reels 9:16' }[];
+  assets?: { src: string; label: string; format: 'Feed 3:4' | 'Reels 9:16' | 'Story 9:16' }[];
   publication?: { screenshot: string; dateLabel: string; reviewNote?: string };
   scheduled?: ScheduledContent;
 }
 export const CONTENT: ContentPiece[] = [
   {
+    id: 'reels-por-tras-de-cada-voo', title: 'Por trás de cada voo', format: 'Reels 9:16 · 30s',
+    pillar: 'Bastidores reais · em edição', cover: 'route', headline: 'Por trás de cada voo', initialStatus: 'producao',
+    objective: 'Mostrar estrutura de apoio, operador e campo com poucos vídeos reais da última captação.',
+    direction: 'Segundo conteúdo da próxima sequência: carrossel → Reels → carrossel. Edição em produção; arquivo final ainda não anexado para aprovação. Sem data por escolha do usuário. Não confundir com o Reels Do preparo ao voo.',
+    caption: 'O drone aparece no céu. Mas o trabalho envolve muito mais. 🚁🌱\n\nEstrutura de apoio, equipamento e gente acompanhando a operação de perto. Bastidores reais da Camporiza no campo.\n\nEnvie município, cultura, área em hectares e serviço necessário para conversar sobre atendimento.\n\n📲 https://wa.me/5567996330973\n\nCamporiza. Na hora certa. No lugar certo.\n\n#Camporiza #DroneAgrícola #BastidoresDoAgro #AgroMS',
+    script: ['Usar poucos vídeos reais e preservar o restante da captação.', 'Estrutura → equipe → operação. Música discreta, som ambiente e sem narração.', 'Encerrar com a vinheta aprovada. Revisar o MP4 antes de liberar para publicação.'],
+  },
+  {
     id: '2026-09-26-janela', title: 'A janela apertou?', format: 'Post 3:4',
-    pillar: 'Conversa comercial', cover: 'field', headline: 'A janela apertou?', initialStatus: 'revisao', plannedDate: '26/09/2026',
+    pillar: 'Conversa comercial', cover: 'field', headline: 'A janela apertou?', initialStatus: 'revisao',
     previewImage: '/marketing/planejados/2026-09-26/01-feed-final.png',
     assets: [{ src: '/marketing/planejados/2026-09-26/01-feed-final.png', label: 'Arte final · A janela apertou?', format: 'Feed 3:4' }],
     objective: 'Convidar o produtor a conversar com antecedência sobre a necessidade da área, sem prometer encaixe imediato na agenda.',
@@ -42,7 +52,7 @@ export const CONTENT: ContentPiece[] = [
   },
   {
     id: '2026-10-03-tecnologia', title: 'Tecnologia perto de quem produz', format: 'Post 3:4',
-    pillar: 'Institucional', cover: 'photo', headline: 'Perto de quem produz', initialStatus: 'revisao', plannedDate: '03/10/2026',
+    pillar: 'Institucional', cover: 'photo', headline: 'Perto de quem produz', initialStatus: 'revisao',
     previewImage: '/marketing/planejados/2026-10-03/01-feed-final.png',
     assets: [{ src: '/marketing/planejados/2026-10-03/01-feed-final.png', label: 'Arte final · Tecnologia perto de quem produz', format: 'Feed 3:4' }],
     objective: 'Reforçar a presença da Camporiza junto ao produtor desde 2024.',
@@ -67,7 +77,7 @@ export const CONTENT: ContentPiece[] = [
   },
   {
     id: '2026-10-10-sinal-lavoura', title: 'Viu um sinal na lavoura?', format: 'Post 3:4',
-    pillar: 'Observação e decisão', cover: 'photo', headline: 'Identificar vem antes de aplicar', initialStatus: 'revisao', plannedDate: '10/10/2026',
+    pillar: 'Observação e decisão', cover: 'photo', headline: 'Identificar vem antes de aplicar', initialStatus: 'revisao',
     assetUrl: 'https://drive.google.com/drive/folders/1i-DA_Xy-pBArbEncBgZJPVEa2FAqq7Wy', assetLabel: 'Abrir arte e legenda no Drive',
     previewImage: '/marketing/planejados/2026-10-10/01-feed-final.png',
     assets: [{ src: '/marketing/planejados/2026-10-10/01-feed-final.png', label: 'Arte final · Viu um sinal na lavoura?', format: 'Feed 3:4' }],
@@ -156,11 +166,34 @@ export const CONTENT: ContentPiece[] = [
   },
   {
     id: 'stories-perguntas', title: 'Qual é o desafio da sua lavoura?', format: 'Stories 9:16',
-    pillar: 'Conversa com o produtor', cover: 'question', headline: 'Vamos falar da sua área?', initialStatus: 'ideia',
+    pillar: 'Conversa com o produtor', cover: 'question', headline: 'Vamos falar da sua área?', initialStatus: 'revisao',
+    assetUrl: 'https://drive.google.com/drive/folders/1e0gPp-kPaODntNqcpTezHPX8UvGOJ4rH', assetLabel: 'Aprovar 2 stories de interação no Drive',
     objective: 'Coletar perguntas reais que orientem os próximos conteúdos.',
-    direction: 'Três telas, texto grande e uma pergunta por tela. Não inventar respostas de clientes. A última tela usa a figurinha de link para o WhatsApp.',
+    direction: 'Duas artes existentes para aprovação: desafio da lavoura e caixinha de perguntas. O CTA ficou na sequência Orçamento. Adicionar os adesivos interativos no Instagram; não inventar respostas. Para o destaque Dúvidas, salvar respostas úteis, não apenas a caixinha vazia.',
     caption: 'Qual é o maior desafio da sua área hoje?\n\nMande sua dúvida. A equipe da Camporiza quer entender o que você precisa.\n\nFale com a gente: (67) 99633-0973.',
-    script: ['Tela 1 · Qual é o desafio da sua lavoura?', 'Tela 2 · Caixinha para receber dúvidas reais.', 'Tela 3 · Link do WhatsApp e convite para conversar.'],
+    script: ['Tela 1 · Qual é o desafio da sua lavoura? Adicionar enquete.', 'Tela 2 · Caixinha para receber dúvidas reais.', 'Publicar entre os conteúdos do feed, após aprovação.'],
+  },
+  {
+    id: 'stories-orcamento', title: 'Orçamento: do contato ao planejamento', format: 'Stories 9:16 · 3 telas',
+    pillar: 'Orçamento', cover: 'question', headline: 'Vamos avaliar sua área?', initialStatus: 'revisao',
+    assetUrl: 'https://drive.google.com/drive/folders/1cpugXVICE50mG6yJjfVIvg1D_iyZr7bQ', assetLabel: 'Aprovar 3 stories de orçamento no Drive',
+    objective: 'Explicar o que enviar e conduzir o produtor ao WhatsApp.',
+    direction: 'Duas artes tipográficas existentes e o CTA de 04/09 reunidos em ordem. Prioridade de publicação após aprovação; salvar no destaque Orçamento. Sem agendamento. O botão desenhado não é clicável: inserir a figurinha de link.',
+    caption: 'Envie município, cultura, área em hectares e serviço necessário. A equipe avalia sua necessidade e disponibilidade. WhatsApp: https://wa.me/5567996330973',
+    script: ['01 · O que enviar para pedir orçamento.', '02 · Contato, avaliação e planejamento.', '03 · Vamos avaliar sua área? Figurinha Fazer orçamento com https://wa.me/5567996330973.'],
+  },
+  {
+    id: 'stories-chuva-avaliacao', title: 'Chuva e avaliação da área', format: 'Stories 9:16 · 2 telas',
+    pillar: 'Serviços e dúvidas', cover: 'rain', headline: 'Avaliar antes de aplicar', initialStatus: 'revisao',
+    assetUrl: 'https://drive.google.com/drive/folders/1y3dXUF_x4A8Zq5JaorWbfvfO7__TjIaz', assetLabel: 'Aprovar 2 stories sobre chuva no Drive',
+    assets: [
+      { src: '/marketing/planejados/choveu/story-01-choveu.png', label: '01 · Choveu?', format: 'Story 9:16' },
+      { src: '/marketing/planejados/choveu/story-02-avaliacao.png', label: '02 · Avaliação da área', format: 'Story 9:16' },
+    ],
+    objective: 'Apresentar a avaliação da área antes da operação, sem prometer aplicação sob chuva.',
+    direction: 'Artes existentes para aprovação de reutilização. CTA antigo com instrução de edição visível separado como Não publicar. Salvar a avaliação em Serviços e o tema de chuva em Dúvidas após aprovação.',
+    caption: 'Cada área pede avaliação de acesso, cultura e condições adequadas. Fale com a Camporiza: https://wa.me/5567996330973',
+    script: ['01 · Chuva e acesso à área.', '02 · Avaliação antes da aplicação. Inserir link para atendimento.', 'Não reutilizar o antigo CTA com instrução de produção visível.'],
   },
 ]
 
@@ -170,10 +203,15 @@ export type PlannerState = Record<string, PieceProgress>
 export function statusFor(piece: ContentPiece, progress: PieceProgress): ProductionStatus {
   if (piece.publication) return 'publicado'
   if (progress.status === 'publicado') return 'publicado'
+  if (progress.status === 'refazer') return 'refazer'
   if (piece.scheduled) return 'agendado'
   return progress.status
 }
 export const CHECKS = ['Texto e acentos revisados', 'Logo e telefone conferidos', 'Imagem e informações validadas', 'Formato testado no celular']
+/** Reprovar o visual preserva a ideia, a legenda, as notas e a data. */
+export function requestArtworkRevision(progress: PieceProgress): PieceProgress {
+  return { ...progress, status: 'refazer', approved: false, checks: progress.checks.filter(c => c !== 'Imagem e informações validadas') }
+}
 export function defaultPlanner(): PlannerState {
   return Object.fromEntries(CONTENT.map(p => [p.id, { status: p.initialStatus, date: '', notes: '', checks: [], approved: !!p.publication }]))
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownToLine, ArrowUpFromLine, ArrowUpRight, Check, Copy, Film, LayoutGrid, ListChecks, ChevronRight, Instagram, Images, Send } from 'lucide-react'
-import { CHECKS, CONTENT, defaultPlanner, STATUS_LABELS, statusFor, validatePlanner, type PieceProgress, type PlannerState, type ProductionStatus } from './marketing-content'
+import { CHECKS, CONTENT, NEXT_FEED_IDS, STORIES_APPROVAL_URL, requestArtworkRevision, defaultPlanner, STATUS_LABELS, statusFor, validatePlanner, type PieceProgress, type PlannerState, type ProductionStatus } from './marketing-content'
 import styles from './marketing.module.css'
 
 const STORAGE_KEY = 'camporiza_marketing_planner_v1'
@@ -11,7 +11,7 @@ export default function MarketingPlanner() {
   const [ready, setReady] = useState(false)
   const [storageError, setStorageError] = useState('')
   const [notice, setNotice] = useState('')
-  const [selectedId, setSelectedId] = useState(CONTENT[0].id)
+  const [selectedId, setSelectedId] = useState(NEXT_FEED_IDS[0])
   const [filter, setFilter] = useState('todos')
   const [detailTab, setDetailTab] = useState('briefing')
   const fileInput = useRef<HTMLInputElement>(null)
@@ -21,8 +21,9 @@ export default function MarketingPlanner() {
   const state = progress[current.id]
   const visible = CONTENT.filter(p => filter === 'todos' || statusFor(p, progress[p.id]) === filter)
   const feedPieces = visible
-    .filter(piece => !piece.format.includes('Stories'))
-    .sort((a, b) => Number(statusFor(a, progress[a.id]) === 'publicado') - Number(statusFor(b, progress[b.id]) === 'publicado'))
+    .filter(piece => !piece.format.includes('Stories') && (NEXT_FEED_IDS.includes(piece.id) || statusFor(piece, progress[piece.id]) === 'publicado'))
+    .sort((a, b) => Number(statusFor(a, progress[a.id]) === 'publicado') - Number(statusFor(b, progress[b.id]) === 'publicado') || NEXT_FEED_IDS.indexOf(a.id) - NEXT_FEED_IDS.indexOf(b.id))
+  const reservePieces = visible.filter(piece => !piece.format.includes('Stories') && !NEXT_FEED_IDS.includes(piece.id) && statusFor(piece, progress[piece.id]) !== 'publicado')
   const storyPieces = visible.filter(piece => piece.format.includes('Stories'))
 
   useEffect(() => {
@@ -53,15 +54,28 @@ export default function MarketingPlanner() {
     return `${now.getFullYear()}-${month}-${day}`
   }
   function toggleApproval(id: string) {
+    if (!ready) return
     const approved = !progress[id].approved
-    updatePiece(id, { approved })
+    updatePiece(id, { approved, ...(approved && progress[id].status === 'refazer' ? { status: 'revisao' as const } : {}) })
     setSelectedId(id)
     setNotice(approved ? 'Conteúdo aprovado. A etapa de produção foi mantida.' : 'Aprovação removida. O conteúdo voltou para conferência.')
   }
   function markPosted(id: string) {
+    if (!ready || progress[id].status === 'refazer') return
     updatePiece(id, { approved: true, status: 'publicado', date: localDate() })
     setSelectedId(id)
     setNotice('Post marcado como feito e movido para as publicações.')
+  }
+  function rejectArtwork(id: string) {
+    if (!ready) return
+    commit({ ...progress, [id]: requestArtworkRevision(progress[id]) })
+    openPiece(id)
+    setNotice('Arte não aprovada. Ideia e legenda mantidas; refação pendente. Nenhuma geração ou gasto de créditos foi iniciado.')
+  }
+  async function copyRevisionRequest() {
+    const request = `CAMPORIZA — REFAZER ARTE NO HIGGSFIELD\nPeça: ${current.title}\nFormato: ${current.format}\nA ideia está aprovada. Regenerar somente o visual, preservando os textos e a logo oficial. Priorizar realismo e uma composição diferente da anterior. Não inventar equipe ou operação real.\nDireção: ${current.direction}\nAjustes pedidos: ${state.notes || 'Melhorar realismo, composição e acabamento.'}\nLegenda a preservar:\n${current.caption}\nReferência: ${current.assetUrl || current.previewImage || 'Ver arquivos da peça no painel'}\nEntregar nova versão para aprovação; não publicar automaticamente.`
+    try { await navigator.clipboard.writeText(request); setNotice('Pedido de refação copiado. Envie nesta conversa para executarmos a nova versão.') }
+    catch { setNotice('Não foi possível copiar. Exporte o backup com o pedido de refação.') }
   }
   function openPiece(id: string) {
     setSelectedId(id); setDetailTab('briefing'); setNotice('')
@@ -107,6 +121,12 @@ export default function MarketingPlanner() {
       </div>
 
       <p className={styles.historyNote}><Check size={15} />Publicações confirmadas pelo material enviado e pelos registros manuais. Conteúdos futuros podem ser aprovados diretamente na grade.</p>
+      <div className={styles.editorialPlan}>
+        <strong>Carrossel → Reels → Carrossel</strong>
+        <p>Próximo trio: planejamento → bastidores reais → área pequena. Reels sem data. Alternar a paleta a cada trio, preservando a identidade da marca. Posts únicos ficam na reserva para adaptação.</p>
+        <a href={STORIES_APPROVAL_URL} target="_blank" rel="noreferrer">Abrir stories e capas para aprovação no Drive ↗</a>
+        <p>Stories: orçamento primeiro; depois interação; chuva e avaliação quando o tema fizer sentido. Nada é publicado automaticamente.</p>
+      </div>
 
       <div className={styles.toolbar} aria-label="Filtrar por status">
         {[['todos', 'Todas'], ...Object.entries(STATUS_LABELS)].map(([id, label]) => (
@@ -123,7 +143,7 @@ export default function MarketingPlanner() {
             <div className={styles.profileIdentity}>
               <span><Instagram size={15} />@camporiza_</span>
               <strong>Prévia do feed</strong>
-              <small>Planejados primeiro · publicados depois</small>
+              <small>Ordem editorial do próximo trio · histórico depois</small>
             </div>
             <div className={styles.profileStats}>
               <strong>{CONTENT.filter(piece => !piece.format.includes('Stories')).length}</strong>
@@ -154,35 +174,43 @@ export default function MarketingPlanner() {
                       : piece.previewImage || piece.assets?.[0] || piece.scheduled
                         ? <img src={piece.previewImage ?? piece.assets?.[0]?.src ?? piece.scheduled!.assets[0].src} alt={`Arte planejada: ${piece.title}`} loading="lazy" />
                         : <><span className={styles.feedFormat}>{piece.format.includes('Reels') ? <Film size={11} /> : <LayoutGrid size={11} />}{piece.format}</span><strong>{piece.headline}</strong><small>{piece.pillar}</small></>}
-                    <span className={styles.feedState} data-status={pieceStatus}>{published ? 'NO AR' : progress[piece.id].approved ? 'APROVADO' : 'PLANEJADO'}</span>
+                    <span className={styles.feedState} data-status={pieceStatus}>{published ? 'NO AR' : pieceStatus === 'refazer' ? 'REFAZER ARTE' : progress[piece.id].approved ? 'APROVADO' : 'PLANEJADO'}</span>
                     <span className={styles.feedKind}>{piece.format.includes('Reels') ? <Film size={14} /> : <Images size={14} />}</span>
                   </div>
                 </button>
                 <div className={styles.feedCopy}>
                   <button type="button" onClick={() => openPiece(piece.id)}>{piece.title}<ChevronRight size={13} /></button>
                   <span>{dateLabel}</span>
+                  {!published && <span>{NEXT_FEED_IDS.indexOf(piece.id) + 1}º na sequência · {piece.format}</span>}
                 </div>
                 {!published ? <div className={styles.feedActions}>
-                  <button type="button" aria-pressed={progress[piece.id].approved} onClick={() => toggleApproval(piece.id)}><Check size={13} />{progress[piece.id].approved ? 'Aprovado' : 'Aprovar'}</button>
-                  <button type="button" onClick={() => markPosted(piece.id)}><Send size={12} />Post feito</button>
+                  <button type="button" disabled={!ready} aria-pressed={progress[piece.id].approved} onClick={() => toggleApproval(piece.id)}><Check size={13} />{progress[piece.id].approved ? 'Aprovado' : 'Aprovar'}</button>
+                  <button type="button" disabled={!ready || pieceStatus === 'refazer'} onClick={() => markPosted(piece.id)}><Send size={12} />Post feito</button>
+                  <button type="button" disabled={!ready} className={styles.rejectButton} onClick={() => rejectArtwork(piece.id)}>Não aprovado — refazer arte</button>
                 </div> : <p className={styles.publishedLine}><Check size={12} />{piece.publication ? 'Confirmado por print' : 'Registro manual'}</p>}
               </article>
             })}
           </div>}
 
+          {reservePieces.length > 0 && <section className={styles.storyLane} aria-label="Acervo fora da próxima sequência">
+            <div className={styles.storyHeading}><span>Acervo / adaptar para próximos trios</span></div>
+            <p className={styles.hint}>Artes e registros anteriores preservados. Posts únicos não entram na nova sequência sem adaptação para carrossel. Datas antigas nos arquivos não são novos agendamentos.</p>
+            {reservePieces.map(piece => <button type="button" key={piece.id} className={styles.reserveItem} onClick={() => openPiece(piece.id)}>{piece.title}<small>{piece.format} · {STATUS_LABELS[statusFor(piece, progress[piece.id])]}</small><ChevronRight size={14} /></button>)}
+          </section>}
           {storyPieces.length > 0 && <section className={styles.storyLane} aria-labelledby="stories-plan-title">
-            <div className={styles.storyHeading}><span><Images size={14} />Stories fora da grade</span><small>continuam no plano</small></div>
+            <div className={styles.storyHeading}><span id="stories-plan-title"><Images size={14} />Stories fora da grade</span><small>para aprovação</small></div>
             {storyPieces.map(piece => {
               const published = statusFor(piece, progress[piece.id]) === 'publicado'
               return <article key={piece.id} className={styles.storyItem}>
                 <button type="button" className={styles.storyOpen} onClick={() => openPiece(piece.id)}>
                   <span className={`${styles.storyCover} ${styles[piece.cover]}`}>{piece.headline.slice(0, 1)}</span>
-                  <span><strong id="stories-plan-title">{piece.title}</strong><small>{piece.format} · {STATUS_LABELS[statusFor(piece, progress[piece.id])]}</small></span>
+                  <span><strong>{piece.title}</strong><small>{piece.format} · {STATUS_LABELS[statusFor(piece, progress[piece.id])]}</small></span>
                   <ChevronRight size={15} />
                 </button>
                 {!published && <div className={styles.storyActions}>
-                  <button type="button" aria-pressed={progress[piece.id].approved} onClick={() => toggleApproval(piece.id)}><Check size={12} />{progress[piece.id].approved ? 'Aprovado' : 'Aprovar'}</button>
-                  <button type="button" onClick={() => markPosted(piece.id)}><Send size={11} />Post feito</button>
+                  <button type="button" disabled={!ready} aria-pressed={progress[piece.id].approved} onClick={() => toggleApproval(piece.id)}><Check size={12} />{progress[piece.id].approved ? 'Aprovado' : 'Aprovar'}</button>
+                  <button type="button" disabled={!ready || progress[piece.id].status === 'refazer'} onClick={() => markPosted(piece.id)}><Send size={11} />Post feito</button>
+                  <button type="button" disabled={!ready} className={styles.rejectButton} onClick={() => rejectArtwork(piece.id)}>Não aprovado — refazer arte</button>
                 </div>}
               </article>
             })}
@@ -193,6 +221,16 @@ export default function MarketingPlanner() {
           <p className={styles.eyebrow}>MESA DE PRODUÇÃO</p>
           <h3 id="piece-title">{current.title}</h3>
           <p className={styles.detailDescription}>{current.format} · {current.pillar}</p>
+          {statusFor(current, state) !== 'publicado' && <div className={styles.reviewActions}>
+            <button disabled={!ready} onClick={() => toggleApproval(current.id)}>{state.approved ? 'Aprovado' : 'Aprovar arte'}</button>
+            <button disabled={!ready} className={styles.rejectButton} onClick={() => rejectArtwork(current.id)}>Não aprovado — refazer arte</button>
+          </div>}
+          {state.status === 'refazer' && <div className={styles.warning}>
+            <strong>Ideia mantida · visual não aprovado</strong>
+            <p>Refação no Higgsfield pendente. Escreva nas notas o que deve melhorar. Este painel ainda salva o pedido somente neste navegador; ele não inicia geração nem consome créditos.</p>
+            <button className={styles.copy} onClick={copyRevisionRequest}>Copiar pedido de refação</button>
+            <p>Envie o pedido nesta conversa para a nova versão ser produzida. Ao aprovar a arte depois, a pendência é encerrada.</p>
+          </div>}
           {current.publication && <div className={styles.publicationEvidence}><span>Publicação confirmada pelo print</span><a href={current.publication.screenshot} target="_blank" rel="noreferrer">Ver print completo <ArrowUpRight size={14} /></a><p>{current.publication.dateLabel}. Registro do material enviado, não consulta ao Instagram em tempo real.</p></div>}
           {current.scheduled && <section className={styles.scheduleEvidence} aria-label="Programação da publicação">
             <div className={styles.scheduleHeading}><span>{statusFor(current, state) === 'publicado' ? 'CONTEÚDO PUBLICADO / REGISTRO MANUAL' : 'CONTEÚDO PRONTO / AGENDADO'}</span><a href={current.scheduled.driveUrl} target="_blank" rel="noreferrer">Abrir no Drive <ArrowUpRight size={14} /></a></div>
@@ -204,7 +242,7 @@ export default function MarketingPlanner() {
           </section>}
           {current.publication?.reviewNote && <p className={styles.warning}>{current.publication.reviewNote}</p>}
           <fieldset disabled={!ready} className={styles.fields}>
-            <label>Status<select disabled={!!current.publication} value={statusFor(current, state)} onChange={e => update({ status: e.target.value as ProductionStatus })}>{Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+            <label>Status<select disabled={!!current.publication} value={statusFor(current, state)} onChange={e => e.target.value === 'refazer' ? rejectArtwork(current.id) : update({ status: e.target.value as ProductionStatus })}>{Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value} disabled={state.status === 'refazer' && (value === 'publicado' || value === 'agendado')}>{label}</option>)}</select></label>
             <label>{current.publication ? 'Data planejada (registro)' : 'Data planejada'}<input aria-label="Data planejada" type="date" value={state.date} onChange={e => update({ date: e.target.value })} onInput={e => update({ date: e.currentTarget.value })} onBlur={e => { if (e.currentTarget.value !== state.date) update({ date: e.currentTarget.value }) }} /></label>
           </fieldset>
           <p className={styles.hint}>{current.publication ? 'A data planejada preserva o registro interno; não comprova quando o post foi publicado.' : 'Organização interna. Não agenda nem publica no Instagram.'}</p>

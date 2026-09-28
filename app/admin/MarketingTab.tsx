@@ -94,11 +94,11 @@ const META_POR_SITUACAO = 3 // cada situação aparece ~3x nos 90 dias
 // ── Grade semanal ──────────────────────────────────────────────────
 const GRADE = [
   { dia: 'Seg', tipo: 'stories', label: 'Stories', detalhe: '3 a 5 telas', hora: '6h30 · 18h30' },
-  { dia: 'Ter', tipo: 'post', label: 'Arte 1', detalhe: 'Carrossel 3 a 6 telas · 4:5', hora: '11h30' },
+  { dia: 'Ter', tipo: 'post', label: 'Carrossel 1', detalhe: '3 a 6 telas · próximo trio', hora: '11h30' },
   { dia: 'Qua', tipo: 'stories', label: 'Stories', detalhe: '3 a 5 telas', hora: '6h30 · 18h30' },
   { dia: 'Qui', tipo: 'reels', label: 'Reels', detalhe: '15 a 35s vertical', hora: '11h30' },
   { dia: 'Sex', tipo: 'stories', label: 'Stories', detalhe: '3 a 5 telas', hora: '6h30 · 18h30' },
-  { dia: 'Sáb', tipo: 'post', label: 'Arte 2', detalhe: 'Post único · 4:5', hora: '11h30' },
+  { dia: 'Sáb', tipo: 'post', label: 'Carrossel 2', detalhe: '3 a 6 telas · fecha o trio', hora: '11h30' },
   { dia: 'Dom', tipo: 'off', label: '—', detalhe: 'Sem publicação', hora: '' },
 ]
 
@@ -491,16 +491,17 @@ export default function MarketingTab() {
               Ritmo da grade
             </p>
             <p className="text-xs text-[#6B7D6B] leading-relaxed mb-3">
-              Em cada linha de 3 posts: pelo menos uma peça escura e uma foto.
-              Nunca 3 escuras nem 3 fotos seguidas.
+              Sequência editorial: carrossel → Reels → carrossel. Cada trio combina
+              capas coerentes e fotografia real no Reels. Variar a paleta entre trios:
+              creme e verde, depois verde profundo e lima, sem perder a identidade.
             </p>
             <div className="grid grid-cols-3 gap-1.5 max-w-[190px]">
-              {['dark', 'photo', 'dark', 'photo', 'dark', 'photo', 'dark', 'photo', 'dark'].map((k, i) => (
+              {['dark', 'photo', 'dark', 'cream', 'photo', 'cream', 'dark', 'photo', 'dark'].map((k, i) => (
                 <div
                   key={i}
                   className="aspect-[4/5] rounded-md border border-white/10 flex items-center justify-center"
                   style={{
-                    background: k === 'dark' ? MKT.deep : 'linear-gradient(140deg,#3d5a41,#20301f)',
+                    background: k === 'dark' ? MKT.deep : k === 'cream' ? MKT.palha : 'linear-gradient(140deg,#3d5a41,#20301f)',
                   }}
                 >
                   {k === 'dark'

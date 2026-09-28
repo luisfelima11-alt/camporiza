@@ -6,7 +6,7 @@ const source = fs.readFileSync(path.join(__dirname, '../app/admin/marketing-cont
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2018 } }).outputText
 const compiled = { exports: {} }
 new Function('module', 'exports', js)(compiled, compiled.exports)
-const { CONTENT, CHECKS, defaultPlanner, statusFor, validatePlanner } = compiled.exports
+const { CONTENT, CHECKS, NEXT_FEED_IDS, requestArtworkRevision, defaultPlanner, statusFor, validatePlanner } = compiled.exports
 const id = CONTENT[0].id
 assert.equal(new Set(CONTENT.map(p => p.id)).size, CONTENT.length)
 assert.deepEqual(validatePlanner(defaultPlanner()), defaultPlanner())
@@ -26,7 +26,19 @@ assert.equal(restored[id].approved, true)
 assert.notEqual(defaultPlanner(), defaultPlanner())
 assert.equal(CONTENT.filter(p => p.publication).length, 3)
 assert.equal(CONTENT.filter(p => p.scheduled).length, 1)
-assert.equal(CONTENT.length, 13)
+assert.equal(CONTENT.length, 16)
+assert.deepEqual(NEXT_FEED_IDS.map(id => CONTENT.find(p => p.id === id).format.split(' ')[0]), ['Carrossel', 'Reels', 'Carrossel'])
+assert.equal(CONTENT.find(p => p.id === 'reels-por-tras-de-cada-voo').plannedDate, undefined)
+const toRevise = { ...defaultPlanner()[id], approved: true, date: '2026-10-06', notes: 'Imagem pouco realista', checks: [...CHECKS] }
+const revision = requestArtworkRevision(toRevise)
+assert.equal(revision.status, 'refazer')
+assert.equal(revision.approved, false)
+assert.equal(revision.notes, toRevise.notes)
+assert.equal(revision.date, toRevise.date)
+assert.equal(revision.checks.includes('Imagem e informações validadas'), false)
+assert.equal(toRevise.approved, true)
+const revisionState = defaultPlanner(); revisionState[id] = revision
+assert.deepEqual(validatePlanner(revisionState)[id], revision)
 assert.equal(CONTENT.find(p => p.id === '2026-09-26-janela').assets.length, 1)
 assert.equal(CONTENT.find(p => p.id === '2026-09-29-planejamento').assets.length, 3)
 assert.equal(CONTENT.find(p => p.id === '2026-10-03-tecnologia').assets.length, 1)
@@ -48,6 +60,7 @@ assert.equal(typeof migrated['carrossel-o-que-muda'].approved, 'boolean')
 const scheduled = CONTENT.find(p => p.id === 'carrossel-solo')
 assert.equal(statusFor(scheduled, { ...migrated[scheduled.id], status: 'ideia' }), 'agendado')
 assert.equal(statusFor(scheduled, { ...migrated[scheduled.id], status: 'publicado', approved: true }), 'publicado')
+assert.equal(statusFor(scheduled, { ...migrated[scheduled.id], status: 'refazer', approved: false }), 'refazer')
 assert.equal(scheduled.scheduled.feedDate, '02/09/2026')
 assert.equal(scheduled.scheduled.storiesDate, '03/09/2026')
 assert.equal(scheduled.scheduled.assets.length, 7)
