@@ -29,6 +29,13 @@ assert.equal(CONTENT.filter(p => p.scheduled).length, 1)
 assert.equal(CONTENT.length, 16)
 assert.deepEqual(NEXT_FEED_IDS.map(id => CONTENT.find(p => p.id === id).format.split(' ')[0]), ['Carrossel', 'Reels', 'Carrossel'])
 assert.equal(CONTENT.find(p => p.id === 'reels-por-tras-de-cada-voo').plannedDate, undefined)
+assert.equal(CONTENT.find(p => p.id === 'reels-por-tras-de-cada-voo').assetUrl.includes('1SCg2KYkxl4lU_755kpy379MrTSvFR-Wo'), true)
+const legacyInProduction = defaultPlanner()['reels-por-tras-de-cada-voo']
+legacyInProduction.status = 'producao'
+assert.equal(statusFor(CONTENT.find(p => p.id === 'reels-por-tras-de-cada-voo'), legacyInProduction), 'revisao')
+const legacyPosted = defaultPlanner()['reels-preparo-ao-voo']
+legacyPosted.status = 'revisao'
+assert.equal(statusFor(CONTENT.find(p => p.id === 'reels-preparo-ao-voo'), legacyPosted), 'publicado')
 const toRevise = { ...defaultPlanner()[id], approved: true, date: '2026-10-06', notes: 'Imagem pouco realista', checks: [...CHECKS] }
 const revision = requestArtworkRevision(toRevise)
 assert.equal(revision.status, 'refazer')

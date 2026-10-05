@@ -159,6 +159,8 @@ export default function MarketingPlanner() {
               const published = pieceStatus === 'publicado'
               const dateLabel = piece.publication
                 ? piece.publication.dateLabel
+                : piece.postingConfirmed
+                  ? 'Publicado · confirmado pelo social media'
                 : progress[piece.id].date
                   ? `${published ? 'Publicado' : 'Planejado'} em ${progress[piece.id].date.split('-').reverse().join('/')}`
                   : piece.scheduled
@@ -187,7 +189,7 @@ export default function MarketingPlanner() {
                   <button type="button" disabled={!ready} aria-pressed={progress[piece.id].approved} onClick={() => toggleApproval(piece.id)}><Check size={13} />{progress[piece.id].approved ? 'Aprovado' : 'Aprovar'}</button>
                   <button type="button" disabled={!ready || pieceStatus === 'refazer'} onClick={() => markPosted(piece.id)}><Send size={12} />Post feito</button>
                   <button type="button" disabled={!ready} className={styles.rejectButton} onClick={() => rejectArtwork(piece.id)}>Não aprovado — refazer arte</button>
-                </div> : <p className={styles.publishedLine}><Check size={12} />{piece.publication ? 'Confirmado por print' : 'Registro manual'}</p>}
+                </div> : <p className={styles.publishedLine}><Check size={12} />{piece.publication ? 'Confirmado por print' : piece.postingConfirmed ? 'Confirmado pelo social media' : 'Registro manual'}</p>}
               </article>
             })}
           </div>}
@@ -232,6 +234,7 @@ export default function MarketingPlanner() {
             <p>Envie o pedido nesta conversa para a nova versão ser produzida. Ao aprovar a arte depois, a pendência é encerrada.</p>
           </div>}
           {current.publication && <div className={styles.publicationEvidence}><span>Publicação confirmada pelo print</span><a href={current.publication.screenshot} target="_blank" rel="noreferrer">Ver print completo <ArrowUpRight size={14} /></a><p>{current.publication.dateLabel}. Registro do material enviado, não consulta ao Instagram em tempo real.</p></div>}
+          {current.postingConfirmed && <p className={styles.hint}>Publicação informada pelo social media. Data exata e comprovante ainda não registrados; não é uma consulta ao Instagram em tempo real.</p>}
           {current.scheduled && <section className={styles.scheduleEvidence} aria-label="Programação da publicação">
             <div className={styles.scheduleHeading}><span>{statusFor(current, state) === 'publicado' ? 'CONTEÚDO PUBLICADO / REGISTRO MANUAL' : 'CONTEÚDO PRONTO / AGENDADO'}</span><a href={current.scheduled.driveUrl} target="_blank" rel="noreferrer">Abrir no Drive <ArrowUpRight size={14} /></a></div>
             <div className={styles.scheduleDates}>
@@ -242,7 +245,7 @@ export default function MarketingPlanner() {
           </section>}
           {current.publication?.reviewNote && <p className={styles.warning}>{current.publication.reviewNote}</p>}
           <fieldset disabled={!ready} className={styles.fields}>
-            <label>Status<select disabled={!!current.publication} value={statusFor(current, state)} onChange={e => e.target.value === 'refazer' ? rejectArtwork(current.id) : update({ status: e.target.value as ProductionStatus })}>{Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value} disabled={state.status === 'refazer' && (value === 'publicado' || value === 'agendado')}>{label}</option>)}</select></label>
+            <label>Status<select disabled={!!current.publication || !!current.postingConfirmed} value={statusFor(current, state)} onChange={e => e.target.value === 'refazer' ? rejectArtwork(current.id) : update({ status: e.target.value as ProductionStatus })}>{Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value} disabled={state.status === 'refazer' && (value === 'publicado' || value === 'agendado')}>{label}</option>)}</select></label>
             <label>{current.publication ? 'Data planejada (registro)' : 'Data planejada'}<input aria-label="Data planejada" type="date" value={state.date} onChange={e => update({ date: e.target.value })} onInput={e => update({ date: e.currentTarget.value })} onBlur={e => { if (e.currentTarget.value !== state.date) update({ date: e.currentTarget.value }) }} /></label>
           </fieldset>
           <p className={styles.hint}>{current.publication ? 'A data planejada preserva o registro interno; não comprova quando o post foi publicado.' : 'Organização interna. Não agenda nem publica no Instagram.'}</p>

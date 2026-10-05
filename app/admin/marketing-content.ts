@@ -15,16 +15,20 @@ export interface ContentPiece {
   plannedDate?: string; previewImage?: string;
   assets?: { src: string; label: string; format: 'Feed 3:4' | 'Reels 9:16' | 'Story 9:16' }[];
   publication?: { screenshot: string; dateLabel: string; reviewNote?: string };
+  postingConfirmed?: boolean;
+  readyForReview?: boolean;
   scheduled?: ScheduledContent;
 }
 export const CONTENT: ContentPiece[] = [
   {
     id: 'reels-por-tras-de-cada-voo', title: 'Por trás de cada voo', format: 'Reels 9:16 · 30s',
-    pillar: 'Bastidores reais · em edição', cover: 'route', headline: 'Por trás de cada voo', initialStatus: 'producao',
+    pillar: 'Bastidores reais', cover: 'route', headline: 'Por trás de cada voo', initialStatus: 'revisao', readyForReview: true,
+    previewImage: '/marketing/planejados/reels-por-tras-de-cada-voo-cover.png',
+    assetUrl: 'https://drive.google.com/file/d/1SCg2KYkxl4lU_755kpy379MrTSvFR-Wo/view', assetLabel: 'Assistir ao novo Reels no Drive',
     objective: 'Mostrar estrutura de apoio, operador e campo com poucos vídeos reais da última captação.',
-    direction: 'Segundo conteúdo da próxima sequência: carrossel → Reels → carrossel. Edição em produção; arquivo final ainda não anexado para aprovação. Sem data por escolha do usuário. Não confundir com o Reels Do preparo ao voo.',
-    caption: 'O drone aparece no céu. Mas o trabalho envolve muito mais. 🚁🌱\n\nEstrutura de apoio, equipamento e gente acompanhando a operação de perto. Bastidores reais da Camporiza no campo.\n\nEnvie município, cultura, área em hectares e serviço necessário para conversar sobre atendimento.\n\n📲 https://wa.me/5567996330973\n\nCamporiza. Na hora certa. No lugar certo.\n\n#Camporiza #DroneAgrícola #BastidoresDoAgro #AgroMS',
-    script: ['Usar poucos vídeos reais e preservar o restante da captação.', 'Estrutura → equipe → operação. Música discreta, som ambiente e sem narração.', 'Encerrar com a vinheta aprovada. Revisar o MP4 antes de liberar para publicação.'],
+    direction: 'Segundo conteúdo da próxima sequência: carrossel → Reels → carrossel. MP4 final de 30 segundos, capa e legenda prontos na pasta do Drive para aprovação: https://drive.google.com/drive/folders/1d0Wmpvft3b3me6pcDw8NPbALdorHm8d2. Sem data por escolha do usuário. Não confundir com o Reels Do preparo ao voo, já publicado.',
+    caption: 'O drone aparece no céu. Mas o trabalho envolve muito mais. 🚁🌱\n\nEstrutura de apoio, equipamento e gente acompanhando a operação de perto. Estes são alguns bastidores reais da última ida da Camporiza ao campo.\n\nQuer conversar sobre atendimento na sua área? Envie seu município, a cultura, o tamanho em hectares e o serviço necessário.\n\n📲 Solicite seu orçamento: https://wa.me/5567996330973\n\nCamporiza. Na hora certa. No lugar certo.\n\n#Camporiza #DroneAgrícola #PulverizaçãoAgrícola #BastidoresDoAgro #AgroMS',
+    script: ['Três vídeos reais da última captação, preservando o restante para futuras peças.', 'Estrutura → equipe → operação. Música discreta, som ambiente e sem narração.', 'Últimos 5 segundos com a vinheta aprovada. MP4 final pronto para aprovação.'],
   },
   {
     id: '2026-09-26-janela', title: 'A janela apertou?', format: 'Post 3:4',
@@ -88,11 +92,11 @@ export const CONTENT: ContentPiece[] = [
   },
   {
     id: 'reels-preparo-ao-voo', title: 'Do preparo ao voo', format: 'Reels 9:16 · 28,8s',
-    pillar: 'Operação real', cover: 'photo', headline: 'Do preparo ao voo', initialStatus: 'revisao',
+    pillar: 'Operação real', cover: 'photo', headline: 'Do preparo ao voo', initialStatus: 'publicado', postingConfirmed: true,
     previewImage: '/marketing/planejados/reels-do-preparo-ao-voo-thumb.jpg',
     assetUrl: 'https://drive.google.com/file/d/1oi9kpxQjooUGnj3cawB4oTYjjFFmDNQP/view', assetLabel: 'Assistir ao Reels no Drive',
     objective: 'Mostrar, com imagens reais, as etapas do trabalho da Camporiza antes e durante a operação.',
-    direction: 'Reels montado com três vídeos reais enviados pela equipe e vinheta final. Aguardando aprovação; não publicado nem agendado.',
+    direction: 'Reels montado com três vídeos reais enviados pela equipe e vinheta final. Publicação confirmada pelo social media; data exata e comprovante ainda não informados.',
     caption: 'Cada operação começa antes do voo: com preparo, conferência e atenção a cada detalhe. 🚁🌱\n\nUm pouco dos bastidores reais da Camporiza no campo — tecnologia e cuidado em cada etapa da pulverização.\n\nPrecisa de um orçamento para sua área? Chame a gente no WhatsApp. Atendemos a partir de 1 hectare.\n\n📲 https://wa.me/5567996330973\n\n#Camporiza #DroneAgrícola #PulverizaçãoAgrícola #AgriculturaDePrecisão #AgroMS',
     script: ['00:00–00:06 · Preparação.', '00:06–00:15 · Execução.', '00:15–00:24 · Operação.', '00:24–00:28,8 · Vinheta final.'],
   },
@@ -202,8 +206,10 @@ export type PlannerState = Record<string, PieceProgress>
 /** Evidência de publicação não apaga notas ou status legados do navegador. */
 export function statusFor(piece: ContentPiece, progress: PieceProgress): ProductionStatus {
   if (piece.publication) return 'publicado'
+  if (piece.postingConfirmed) return 'publicado'
   if (progress.status === 'publicado') return 'publicado'
   if (progress.status === 'refazer') return 'refazer'
+  if (piece.readyForReview && progress.status === 'producao') return 'revisao'
   if (piece.scheduled) return 'agendado'
   return progress.status
 }
