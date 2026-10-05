@@ -23,10 +23,10 @@ export const CONTENT: ContentPiece[] = [
   {
     id: 'reels-por-tras-de-cada-voo', title: 'Por trás de cada voo', format: 'Reels 9:16 · 30s',
     pillar: 'Bastidores reais', cover: 'route', headline: 'Por trás de cada voo', initialStatus: 'revisao', readyForReview: true,
-    previewImage: '/marketing/planejados/reels-por-tras-de-cada-voo-cover.png',
+    previewImage: '/marketing/planejados/reels-por-tras-de-cada-voo-cover-v2.png',
     assetUrl: 'https://drive.google.com/file/d/1SCg2KYkxl4lU_755kpy379MrTSvFR-Wo/view', assetLabel: 'Assistir ao novo Reels no Drive',
     objective: 'Mostrar estrutura de apoio, operador e campo com poucos vídeos reais da última captação.',
-    direction: 'Segundo conteúdo da próxima sequência: carrossel → Reels → carrossel. MP4 final de 30 segundos, capa e legenda prontos na pasta do Drive para aprovação: https://drive.google.com/drive/folders/1d0Wmpvft3b3me6pcDw8NPbALdorHm8d2. Sem data por escolha do usuário. Não confundir com o Reels Do preparo ao voo, já publicado.',
+    direction: 'Segundo conteúdo da próxima sequência: carrossel → Reels → carrossel. MP4 final de 30 segundos, nova capa com foto real do drone em primeiro plano e legenda prontos na pasta do Drive para aprovação: https://drive.google.com/drive/folders/1d0Wmpvft3b3me6pcDw8NPbALdorHm8d2. Sem data por escolha do usuário. Não confundir com o Reels Do preparo ao voo, já publicado.',
     caption: 'O drone aparece no céu. Mas o trabalho envolve muito mais. 🚁🌱\n\nEstrutura de apoio, equipamento e gente acompanhando a operação de perto. Estes são alguns bastidores reais da última ida da Camporiza ao campo.\n\nQuer conversar sobre atendimento na sua área? Envie seu município, a cultura, o tamanho em hectares e o serviço necessário.\n\n📲 Solicite seu orçamento: https://wa.me/5567996330973\n\nCamporiza. Na hora certa. No lugar certo.\n\n#Camporiza #DroneAgrícola #PulverizaçãoAgrícola #BastidoresDoAgro #AgroMS',
     script: ['Três vídeos reais da última captação, preservando o restante para futuras peças.', 'Estrutura → equipe → operação. Música discreta, som ambiente e sem narração.', 'Últimos 5 segundos com a vinheta aprovada. MP4 final pronto para aprovação.'],
   },
