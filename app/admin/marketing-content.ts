@@ -56,12 +56,13 @@ export const CONTENT: ContentPiece[] = [
   },
   {
     id: '2026-10-03-tecnologia', title: 'Tecnologia perto de quem produz', format: 'Post 3:4',
-    pillar: 'Institucional', cover: 'photo', headline: 'Perto de quem produz', initialStatus: 'revisao',
-    previewImage: '/marketing/planejados/2026-10-03/01-feed-final.png',
-    assets: [{ src: '/marketing/planejados/2026-10-03/01-feed-final.png', label: 'Arte final · Tecnologia perto de quem produz', format: 'Feed 3:4' }],
+    pillar: 'Institucional', cover: 'photo', headline: 'Perto de quem produz', initialStatus: 'revisao', plannedDate: '05/10/2026',
+    assetUrl: 'https://drive.google.com/drive/folders/1a_3McZzj8Z_IMGuBMSw-vFZ1CvwUmISc', assetLabel: 'Abrir arte e legenda no Drive',
+    previewImage: '/marketing/planejados/2026-10-03/01-feed-final-real.png',
+    assets: [{ src: '/marketing/planejados/2026-10-03/01-feed-final-real.png', label: 'Arte com foto real · Tecnologia perto de quem produz', format: 'Feed 3:4' }],
     objective: 'Reforçar a presença da Camporiza junto ao produtor desde 2024.',
-    direction: 'Arte e legenda prontas para aprovação. Cena ilustrativa gerada no Higgsfield; não representa equipe, cliente ou propriedade reais. Data sugerida; não agendada no Instagram.',
-    caption: 'Desde 2024, a Camporiza está ao lado de quem produz.\n\nTecnologia no campo e atenção à necessidade de cada área. Quer conversar sobre atendimento na sua propriedade?\n\nSolicite um orçamento pelo WhatsApp do perfil.\n\nCamporiza. Na hora certa. No lugar certo.\n#Camporiza #DroneAgrícola #AgroMS\n\nImagem ilustrativa criada com IA.',
+    direction: 'Arte estática com foto real da última captação, enviada pelo social media, substituindo o fundo gerado por IA. Texto e logo preservados. Sugerida para 05/10; ainda em revisão e não agendada no Instagram.',
+    caption: 'Desde 2024, a Camporiza está ao lado de quem produz.\n\nTecnologia no campo e atenção à necessidade de cada área. Quer conversar sobre atendimento na sua propriedade?\n\nSolicite um orçamento pelo WhatsApp do perfil.\n\nCamporiza. Na hora certa. No lugar certo.\n#Camporiza #DroneAgrícola #AgroMS',
     script: ['Post estático em 1080 × 1440.', 'Revisar arte e legenda com a equipe antes de publicar.', 'Não apresentar a cena gerada como registro de atendimento.'],
   },
   {
