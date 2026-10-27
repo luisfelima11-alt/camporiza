@@ -1,0 +1,395 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Camporiza · modelo de Reels 30s · 1080x1920
+// =====================================================================
+// CONFIG: para um vídeo novo, edite só este bloco (textos, números, fotos)
+// e rode `node render.mjs video saida.mp4`. Ver README.md.
+// =====================================================================
+const CONFIG = {
+  fotos: {
+    gancho: 'assets/campo.jpg',            // cena 1 (0–4s): foto de fundo do gancho
+    numeros: 'assets/drone_real.jpg',      // cena 4 (16–24s): foto real, fica escurecida
+    logo: 'assets/apple-touch-icon.png',   // assinatura final
+  },
+  chuva: true,                             // chuva animada sobre a foto do gancho
+  gancho: { tag: 'HORA DE PLANTAR', l1: 'CHOVEU.', l2: 'E O TRATOR', l3: 'NÃO ENTRA?', apoio: 'Solo encharcado. Aplicação atrasada.' },
+  virada: { l1: 'O DRONE', l2: 'ENTRA.', itens: ['Não pisa na lavoura.', 'Não compacta o solo.', 'Aplica na janela certa.'] },
+  hud: {
+    topo: 'CAMPORIZA // MODO APLICAÇÃO',
+    legendas: [['ROTA PLANEJADA', 'POR GPS'], ['FAIXA DE ATÉ', '11 METROS'], ['CADA METRO', 'DO TALHÃO COBERTO']],
+    faixa: '11 m', tanque: '40 L', areaFinalHa: 12.5,   // área é ilustrativa
+  },
+  numeros: {
+    tag: 'POR QUE A CAMPORIZA',
+    // valor = número que conta de 0 até ele; texto = (opcional) mostra fixo em vez de contar
+    itens: [
+      { valor: 5000, sufixo: '+',   l1: 'HECTARES',    l2: 'APLICADOS' },
+      { valor: 30,   sufixo: '+',   l1: 'PRODUTORES',  l2: 'ATENDIDOS' },
+      { valor: 40,   sufixo: ' L',  l1: 'POR TANQUE',  l2: 'DJI AGRAS T40 E T50' },
+      { texto: '1',  sufixo: ' ha', l1: 'ÁREA MÍNIMA', l2: 'NENHUMA LAVOURA É PEQUENA' },
+    ],
+  },
+  final: {
+    l1: 'HORA DE PLANTAR.', l2: 'HORA DE PROTEGER.',
+    precoTopo: 'A PARTIR DE', preco: 'R$ 75/ha',
+    whatsapp: '(67) 99633-0973', apoio: 'Orçamento pelo WhatsApp',
+    rodape: '@camporiza_   ·   camporiza.com.br',
+  },
+};
+// Cores do site: brand-dark #1A4A1A, brand-medium #2D7A2D, brand-light #4CAF50, destaque #6FCF7C
+const C = { dark:'#1A4A1A', deep:'#0E2A0E', ink:'#081A08', med:'#2D7A2D', light:'#4CAF50', accent:'#6FCF7C', white:'#FFFFFF', cream:'#F4F1E8' };
+const W = 1080, H = 1920, FONT = 'Inter, Arial, sans-serif';
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+
+// ---------- helpers ----------
+const clamp = (v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp = (a,b,p)=>a+(b-a)*p;
+const prog = (t,a,b)=>clamp((t-a)/(b-a));
+const eOut = p=>1-Math.pow(1-p,3);
+const eIn = p=>p*p*p;
+const eInOut = p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const eBack = p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2);};
+function rnd(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+
+function font(sz,w=900){ctx.font=`${w} ${sz}px ${FONT}`;}
+function txt(s,x,y,sz,col,w=900,align='left',ls=0){
+  font(sz,w);ctx.fillStyle=col;ctx.textAlign=align;ctx.textBaseline='alphabetic';
+  if('letterSpacing' in ctx) ctx.letterSpacing=ls+'px';
+  ctx.fillText(s,x,y);
+  if('letterSpacing' in ctx) ctx.letterSpacing='0px';
+}
+// texto que sobe de trás de uma máscara
+function revealTxt(s,x,y,sz,col,p,w=900,align='left',ls=0){
+  if(p<=0) return;
+  const e=eOut(p);
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,y-sz*1.05,W,sz*1.32);ctx.clip();
+  txt(s,x,y+(1-e)*sz*1.2,sz,col,w,align,ls);
+  ctx.restore();
+}
+function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function coverImg(img,zoom=1,ox=0,oy=0){
+  const s=Math.max(W/img.width,H/img.height)*zoom;
+  const w=img.width*s,h=img.height*s;
+  ctx.drawImage(img,(W-w)/2+ox,(H-h)/2+oy,w,h);
+}
+function tag(s,x,y,p,col=C.accent){ // etiqueta com traço
+  if(p<=0) return;
+  const e=eOut(p);
+  ctx.globalAlpha=e;
+  ctx.fillStyle=col;ctx.fillRect(x,y-13,56*e,5);
+  txt(s,x+76,y,30,col,700,'left',4);
+  ctx.globalAlpha=1;
+}
+
+// drone visto de cima (mesmo desenho do logo)
+function drone(x,y,s,t,rot=0,alpha=1){
+  ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(s,s);ctx.globalAlpha=alpha;
+  ctx.strokeStyle='#fff';ctx.lineCap='round';
+  const arms=[[-1,-1],[1,-1],[-1,1],[1,1]];
+  ctx.lineWidth=7;
+  for(const [ax,ay] of arms){ctx.beginPath();ctx.moveTo(ax*18,ay*14);ctx.lineTo(ax*58,ay*50);ctx.stroke();}
+  for(let i=0;i<4;i++){
+    const [ax,ay]=arms[i],cx=ax*64,cy=ay*56;
+    ctx.fillStyle='rgba(255,255,255,0.10)';ctx.beginPath();ctx.arc(cx,cy,34,0,Math.PI*2);ctx.fill();
+    ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,34,0,Math.PI*2);ctx.stroke();
+    const a=t*38*(i%2?1:-1);
+    ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*30,cy+Math.sin(a)*30);ctx.lineTo(cx-Math.cos(a)*30,cy-Math.sin(a)*30);ctx.stroke();
+  }
+  ctx.fillStyle='#fff';rrect(-30,-24,60,48,10);ctx.fill();
+  ctx.fillStyle=C.light;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();
+  ctx.restore();ctx.globalAlpha=1;
+}
+
+const WA_PATH = new Path2D('M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.38 1.26 4.81L2 22l5.42-1.37a9.9 9.9 0 004.62 1.14c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.52 14.15c-.23.64-1.330 1.22-1.84 1.3-.47.07-1.07.1-1.72-.11-.4-.13-.9-.3-1.550-.58-2.73-1.18-4.51-3.95-4.65-4.13-.13-.19-1.1-1.47-1.1-2.8 0-1.32.69-1.97 1-2.27.3-.3.65-.37.87-.37.22 0 .43.01.62.02.2.01.47-.07.74.56.28.65.94 2.3 1.02 2.47.08.17.13.37.03.58-.1.2-.15.33-.3.51-.15.17-.32.38-.45.51-.15.15-.31.31-.13.61.18.3.79 1.31 1.7 2.12 1.17 1.04 2.15 1.36 2.45 1.52.3.15.48.13.66-.08.18-.21.77-.9.98-1.21.2-.3.41-.25.69-.15.28.1 1.79.84 2.1.99.3.15.5.22.57.35.07.12.07.7-.16 1.35z');
+
+// ---------- assets ----------
+const IM = {};
+function load(k,src){return new Promise(r=>{const i=new Image();i.onload=()=>{IM[k]=i;r();};i.src=src;});}
+window.ready = Promise.all([load('campo',CONFIG.fotos.gancho),load('drone',CONFIG.fotos.numeros),load('logo',CONFIG.fotos.logo),document.fonts.load('900 100px Inter'),document.fonts.load('700 30px Inter')]);
+
+// ---------- cenas ----------
+// 1) GANCHO 0–4s: lavoura molhada + chuva
+function sceneHook(t){
+  const z=1.08+t*0.03;
+  coverImg(IM.campo,z,-40,-60+t*-8);
+  // escurece embaixo
+  let g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(8,26,8,0.55)');g.addColorStop(.35,'rgba(8,26,8,0.15)');g.addColorStop(.62,'rgba(8,26,8,0.70)');g.addColorStop(1,'rgba(8,26,8,0.95)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // chuva
+  ctx.strokeStyle='rgba(220,235,255,0.35)';ctx.lineWidth=2.2;ctx.lineCap='round';
+  for(let i=0;i<(CONFIG.chuva?140:0);i++){
+    const sp=1500+rnd(i)*900, x0=rnd(i+7)*1300-120;
+    const y=((rnd(i+3)*H + t*sp)%(H+200))-100, x=x0 - (y)*0.18;
+    const len=40+rnd(i+11)*50;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-len*0.18,y+len);ctx.stroke();
+  }
+  // flash de impacto no início
+  const fl=1-prog(t,0,0.35); if(fl>0){ctx.fillStyle=`rgba(255,255,255,${fl*0.5})`;ctx.fillRect(0,0,W,H);}
+  const G=CONFIG.gancho;
+  tag(G.tag,90,300,prog(t,0.2,0.8));
+  // CHOVEU. com slam
+  const p1=prog(t,0,0.32);
+  if(p1>0){
+    const s=lerp(1.35,1,eOut(p1));
+    ctx.save();ctx.translate(90,1150);ctx.scale(s,s);ctx.globalAlpha=clamp(p1*2);
+    txt(G.l1,0,0,190,C.white,900,'left',-4);ctx.restore();ctx.globalAlpha=1;
+  }
+  revealTxt(G.l2,94,1290,112,C.white,prog(t,1.0,1.45),900,'left',-2);
+  revealTxt(G.l3,94,1410,112,C.accent,prog(t,1.5,1.95),900,'left',-2);
+  const pl=prog(t,2.1,2.6); ctx.fillStyle=C.light;ctx.fillRect(94,1470,180*eOut(pl),8);
+  ctx.globalAlpha=eOut(prog(t,2.3,2.8));
+  txt(G.apoio,94,1550,44,'rgba(255,255,255,0.92)',600);
+  ctx.globalAlpha=1;
+}
+
+// 2) VIRADA 4–7s: o drone entra
+function sceneTurn(t){ // t local 0..3
+  ctx.fillStyle=C.dark;ctx.fillRect(0,0,W,H);
+  let g=ctx.createRadialGradient(540,760,40,540,760,900);
+  g.addColorStop(0,'rgba(76,175,80,0.35)');g.addColorStop(1,'rgba(76,175,80,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // linhas de lavoura em perspectiva
+  ctx.strokeStyle='rgba(111,207,124,0.16)';ctx.lineWidth=2;
+  for(let i=-12;i<=12;i++){ctx.beginPath();ctx.moveTo(540+i*18,1060);ctx.lineTo(540+i*260,H);ctx.stroke();}
+  for(let k=0;k<10;k++){const yy=1060+Math.pow((k+((t*1.2)%1))/10,2)*860;ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();ctx.globalAlpha=1;}
+  // drone atravessa
+  const pd=eInOut(prog(t,0,1.4));
+  const dx=lerp(-260,540,pd), dy=lerp(980,700,pd)+Math.sin(t*3)*8;
+  drone(dx,dy,1.55,t+4,lerp(-0.25,0,pd));
+  // sombra/névoa de aplicação sob o drone
+  ctx.fillStyle=`rgba(111,207,124,${0.10+0.05*Math.sin(t*9)})`;
+  ctx.beginPath();ctx.ellipse(dx,dy+200,190,40,0,0,Math.PI*2);ctx.fill();
+  revealTxt(CONFIG.virada.l1,90,330,150,C.white,prog(t,0.15,0.55),900,'left',-3);
+  revealTxt(CONFIG.virada.l2,90,480,150,C.accent,prog(t,0.4,0.8),900,'left',-3);
+  const items=CONFIG.virada.itens.slice(0,3).map((s,i)=>[s,1.3+i*0.45]);
+  items.forEach(([s,a],i)=>{
+    const p=prog(t,a,a+0.4); if(p<=0) return;
+    const e=eOut(p), y=1300+i*100;
+    ctx.globalAlpha=e;
+    ctx.fillStyle=C.light;ctx.beginPath();ctx.arc(110+(1-e)*-30,y-16,15,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=C.dark;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(103+(1-e)*-30,y-16);ctx.lineTo(109+(1-e)*-30,y-9);ctx.lineTo(119+(1-e)*-30,y-24);ctx.stroke();
+    txt(s,150+(1-e)*-30,y,56,C.white,700);
+    ctx.globalAlpha=1;
+  });
+}
+
+// 3) VISÃO DO DRONE 7–16s: rota GPS + faixas
+const F={cx:540,cy:930,w:760,h:720,rot:-0.06,passes:8};
+function sceneHUD(t){ // t local 0..9
+  ctx.fillStyle=C.ink;ctx.fillRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='rgba(111,207,124,0.07)';ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // leve zoom de câmera
+  const cz=lerp(0.94,1.04,eInOut(prog(t,0,9)));
+  ctx.save();ctx.translate(F.cx,F.cy);ctx.scale(cz,cz);ctx.rotate(F.rot);
+  const hw=F.w/2,hh=F.h/2, sw=F.w/F.passes;
+  // talhão aparece
+  const pf=eOut(prog(t,0,0.6));
+  ctx.globalAlpha=pf;
+  ctx.fillStyle='#173A17';ctx.fillRect(-hw,-hh,F.w,F.h);
+  ctx.strokeStyle='rgba(111,207,124,0.18)';ctx.lineWidth=2;
+  for(let x=-hw+12;x<hw;x+=19){ctx.beginPath();ctx.moveTo(x,-hh);ctx.lineTo(x,hh);ctx.stroke();}
+  ctx.globalAlpha=1;
+  // rota: 8 passadas verticais
+  const pts=[];
+  for(let i=0;i<F.passes;i++){
+    const x=-hw+sw*(i+.5), down=i%2===1;
+    pts.push([x,down?-hh+20:hh-20]);pts.push([x,down?hh-20:-hh+20]);
+  }
+  const segs=[];let total=0;
+  for(let i=0;i<pts.length-1;i++){const l=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]);segs.push(l);total+=l;}
+  function at(d){let acc=0;for(let i=0;i<segs.length;i++){if(acc+segs[i]>=d){const q=(d-acc)/segs[i];return [lerp(pts[i][0],pts[i+1][0],q),lerp(pts[i][1],pts[i+1][1],q),i];}acc+=segs[i];}return [...pts[pts.length-1],segs.length-1];}
+  // rota planejada tracejada (desenho rápido)
+  const pr=eInOut(prog(t,0.4,1.8));
+  ctx.setLineDash([16,14]);ctx.lineDashOffset=-t*40;
+  ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=3;
+  ctx.beginPath();let rem=total*pr;ctx.moveTo(...pts[0]);
+  for(let i=0;i<segs.length&&rem>0;i++){const q=Math.min(1,rem/segs[i]);ctx.lineTo(lerp(pts[i][0],pts[i+1][0],q),lerp(pts[i][1],pts[i+1][1],q));rem-=segs[i];}
+  ctx.stroke();ctx.setLineDash([]);
+  // pontos de rota
+  pts.forEach((p,i)=>{const pp=prog(t,0.4+i*0.08,0.6+i*0.08);if(pp>0){ctx.fillStyle=`rgba(255,255,255,${pp})`;ctx.beginPath();ctx.arc(p[0],p[1],7,0,Math.PI*2);ctx.fill();}});
+  // aplicação: faixas pintadas
+  const pa=prog(t,1.9,8.4), d=total*eInOut(pa);
+  const [px,py,si]=at(d);
+  const swCol='rgba(111,207,124,0.42)';
+  for(let i=0;i<F.passes;i++){
+    const x0=-hw+sw*i;
+    const segIdx=i*2; // segmento vertical da passada i
+    let accBefore=0;for(let k=0;k<segIdx;k++)accBefore+=segs[k];
+    const done=clamp((d-accBefore)/segs[segIdx]);
+    if(done<=0) continue;
+    const down=i%2===1, len=(F.h-40)*done;
+    ctx.fillStyle=swCol;
+    if(down) ctx.fillRect(x0+3,-hh+20,sw-6,len); else ctx.fillRect(x0+3,hh-20-len,sw-6,len);
+  }
+  // borda do talhão
+  ctx.globalAlpha=pf;ctx.strokeStyle=C.accent;ctx.lineWidth=4;ctx.strokeRect(-hw,-hh,F.w,F.h);ctx.globalAlpha=1;
+  // marcação de faixa 11 m
+  const pm=prog(t,3.2,3.7)*(1-prog(t,6.0,6.4));
+  if(pm>0){
+    ctx.globalAlpha=eOut(pm);
+    const x0=-hw+sw*0, y0=-hh-40;
+    ctx.strokeStyle='#fff';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(x0+3,y0);ctx.lineTo(x0+sw-3,y0);ctx.moveTo(x0+3,y0-12);ctx.lineTo(x0+3,y0+12);ctx.moveTo(x0+sw-3,y0-12);ctx.lineTo(x0+sw-3,y0+12);ctx.stroke();
+    txt(CONFIG.hud.faixa,x0+sw/2,y0-22,30,'#fff',800,'center');
+    ctx.globalAlpha=1;
+  }
+  // drone
+  if(t>1.6){
+    const seg=si, vert=seg%2===0, dir= vert ? ((Math.floor(seg/2))%2===0? -Math.PI/2: Math.PI/2) : 0;
+    ctx.fillStyle='rgba(111,207,124,0.25)';ctx.beginPath();ctx.arc(px,py,sw*0.75,0,Math.PI*2);ctx.fill();
+    drone(px,py,0.62,t+7,0,eOut(prog(t,1.6,2.0)));
+  }
+  ctx.restore();
+
+  // moldura HUD
+  ctx.strokeStyle=C.accent;ctx.lineWidth=5;
+  const m=60,L=70,top=230,bot=1640;
+  [[m,top,1,1],[W-m,top,-1,1],[m,bot,1,-1],[W-m,bot,-1,-1]].forEach(([x,y,sx,sy])=>{ctx.beginPath();ctx.moveTo(x,y+sy*L);ctx.lineTo(x,y);ctx.lineTo(x+sx*L,y);ctx.stroke();});
+  txt(CONFIG.hud.topo,90,290,26,'rgba(255,255,255,0.75)',700,'left',3);
+  const blink=Math.floor(t*2)%2===0;
+  ctx.fillStyle=blink?C.light:'rgba(76,175,80,0.3)';ctx.beginPath();ctx.arc(W-210,281,10,0,Math.PI*2);ctx.fill();
+  txt('GPS',W-90,290,26,'rgba(255,255,255,0.75)',700,'right',3);
+
+  // legendas grandes (trocam)
+  const caps=CONFIG.hud.legendas.slice(0,3).map(([a,b],i)=>[a,b,[0.3,3.1,6.1][i],[3.0,6.0,9.2][i]]);
+  caps.forEach(([a,b,s,e])=>{
+    const pin=prog(t,s,s+0.45), pout=prog(t,e-0.3,e);
+    if(pin<=0||pout>=1) return;
+    ctx.globalAlpha=1-pout;
+    revealTxt(a,90,420,76,C.white,pin,900,'left',-1);
+    revealTxt(b,90,500,76,C.accent,prog(t,s+0.12,s+0.57),900,'left',-1);
+    ctx.globalAlpha=1;
+  });
+
+  // leituras
+  const area=(CONFIG.hud.areaFinalHa*eInOut(pa));
+  const boxes=[['FAIXA',CONFIG.hud.faixa],['TANQUE',CONFIG.hud.tanque],['ÁREA',area.toFixed(1).replace('.',',')+' ha']];
+  const pb=eOut(prog(t,0.8,1.4));
+  boxes.forEach(([k,v],i)=>{
+    const bw=290,gap=25,x=90+i*(bw+gap),y=1410+(1-pb)*40;
+    ctx.globalAlpha=pb;
+    ctx.fillStyle='rgba(26,74,26,0.85)';rrect(x,y,bw,150,16);ctx.fill();
+    ctx.strokeStyle='rgba(111,207,124,0.5)';ctx.lineWidth=2;rrect(x,y,bw,150,16);ctx.stroke();
+    txt(k,x+26,y+48,24,C.accent,700,'left',3);
+    txt(v,x+26,y+118,58,C.white,900);
+    ctx.globalAlpha=1;
+  });
+}
+
+// 4) NÚMEROS 16–24s: foto real do drone
+const NUMS=CONFIG.numeros.itens.slice(0,4).map(it=>({
+  v:it.valor||1, suf:it.sufixo||'', l1:it.l1, l2:it.l2,
+  fmt: it.texto!==undefined ? ()=>it.texto : n=>Math.round(n).toLocaleString('pt-BR'),
+}));
+function sceneNums(t){ // t local 0..8
+  coverImg(IM.drone,1.05+t*0.012,0,0);
+  ctx.fillStyle='rgba(8,26,8,0.42)';ctx.fillRect(0,0,W,H);
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(8,26,8,0.75)');g.addColorStop(.3,'rgba(8,26,8,0.55)');g.addColorStop(.55,'rgba(8,26,8,0.85)');g.addColorStop(.75,'rgba(8,26,8,0.5)');g.addColorStop(1,'rgba(8,26,8,0.9)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  tag(CONFIG.numeros.tag,90,330,prog(t,0,0.5));
+  const i=Math.min(NUMS.length-1,Math.floor(t/2)), lt=t-i*2, n=NUMS[i];
+  const pin=eOut(prog(lt,0,0.35)), pout=i<NUMS.length-1?eIn(prog(lt,1.7,2.0)):0;
+  const cnt=eOut(prog(lt,0.05,1.1));
+  const y0=980 - pout*80 + (1-pin)*80;
+  ctx.globalAlpha=pin*(1-pout);
+  const big=n.fmt(n.v*cnt);
+  font(250,900);const bw=ctx.measureText(big).width;
+  txt(big,90,y0,250,C.white,900,'left',-8);
+  txt(n.suf,90+bw-8*big.length+10,y0,150,C.accent,900,'left',-4);
+  ctx.fillStyle=C.light;ctx.fillRect(94,y0+60,140,8);
+  txt(n.l1,94,y0+160,72,C.white,900,'left',-1);
+  txt(n.l2,94,y0+235,44,'rgba(255,255,255,0.8)',600,'left',1);
+  ctx.globalAlpha=1;
+  // indicador
+  for(let k=0;k<NUMS.length;k++){ctx.fillStyle=k===i?C.accent:'rgba(255,255,255,0.25)';rrect(94+k*58,1520,k===i?44:24,10,5);ctx.fill();}
+}
+
+// 5) ASSINATURA 24–30s
+function sceneEnd(t){ // t local 0..6
+  ctx.fillStyle=C.dark;ctx.fillRect(0,0,W,H);
+  let g=ctx.createRadialGradient(540,520,30,540,520,820);g.addColorStop(0,'rgba(76,175,80,0.30)');g.addColorStop(1,'rgba(76,175,80,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // ondas de lavoura (como no logo)
+  for(let k=0;k<5;k++){
+    const pw=eOut(prog(t,0.1+k*0.08,0.9+k*0.08));
+    ctx.fillStyle=['#163816','#1F5A1F','#2D7A2D','#3C953F','#4CAF50'][k];
+    ctx.globalAlpha=0.55;
+    ctx.beginPath();const base=H+40-k*0-(1-pw)*0;
+    const yb=1660+k*55+(1-pw)*400;
+    ctx.moveTo(0,H);ctx.lineTo(0,yb);
+    for(let x=0;x<=W;x+=20){ctx.lineTo(x,yb+Math.sin(x/170+k*1.3+t*0.8)*26);}
+    ctx.lineTo(W,H);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+  }
+  // logo
+  const pl=prog(t,0.05,0.6);
+  if(pl>0){
+    const s=eBack(pl), r=130;
+    ctx.save();ctx.translate(540,400);ctx.scale(s,s);
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,r+8,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.clip();
+    ctx.imageSmoothingQuality='high';ctx.drawImage(IM.logo,-r,-r,r*2,r*2);
+    ctx.restore();
+  }
+  const FN=CONFIG.final;
+  revealTxt(FN.l1,540,690,96,C.white,prog(t,0.45,0.9),900,'center',-2);
+  revealTxt(FN.l2,540,800,96,C.accent,prog(t,0.7,1.15),900,'center',-2);
+  // preço
+  const pp=eOut(prog(t,1.3,1.8));
+  ctx.globalAlpha=pp;
+  txt(FN.precoTopo,540,930+(1-pp)*30,34,'rgba(255,255,255,0.8)',700,'center',6);
+  txt(FN.preco,540,1060+(1-pp)*30,128,C.white,900,'center',-3);
+  ctx.globalAlpha=1;
+  // botão WhatsApp
+  const pw=prog(t,2.0,2.5);
+  if(pw>0){
+    const s=eBack(pw)*(1+0.03*Math.sin(Math.max(0,t-2.6)*5)), bw=780,bh=140;
+    ctx.save();ctx.translate(540,1230);ctx.scale(s,s);
+    ctx.shadowColor='rgba(76,175,80,0.6)';ctx.shadowBlur=40;
+    ctx.fillStyle=C.light;rrect(-bw/2,-bh/2,bw,bh,bh/2);ctx.fill();ctx.shadowBlur=0;
+    ctx.save();ctx.translate(-bw/2+48,-34);ctx.scale(2.9,2.9);ctx.fillStyle='#fff';ctx.fill(WA_PATH);ctx.restore();
+    txt(FN.whatsapp,40,22,64,'#fff',900,'center',-1);
+    ctx.restore();
+  }
+  const pf=eOut(prog(t,2.6,3.1));
+  ctx.globalAlpha=pf;
+  txt(FN.apoio,540,1375,40,'rgba(255,255,255,0.9)',600,'center');
+  txt(FN.rodape,540,1450,38,C.accent,700,'center',1);
+  ctx.globalAlpha=1;
+}
+
+// transição: varredura verde diagonal
+function wipe(p){
+  if(p<=0||p>=1) return;
+  // em p=0.5 a faixa cobre a tela inteira (é quando a cena troca)
+  const e=eInOut(p), x=lerp(-2300,1900,e);
+  ctx.save();ctx.translate(x,0);ctx.transform(1,0,-0.35,1,0,0);
+  ctx.fillStyle=C.med;ctx.fillRect(0,0,140,H);
+  ctx.fillStyle=C.light;ctx.fillRect(140,0,1900,H);
+  ctx.fillStyle=C.accent;ctx.fillRect(2040,0,70,H);
+  ctx.restore();
+}
+
+window.render=function(t){
+  ctx.clearRect(0,0,W,H);
+  if(t<4) sceneHook(t);
+  else if(t<7) sceneTurn(t-4);
+  else if(t<16) sceneHUD(t-7);
+  else if(t<24) sceneNums(t-16);
+  else sceneEnd(t-24);
+  // transições centradas nos cortes
+  wipe(prog(t,3.7,4.3));
+  wipe(prog(t,6.7,7.3));
+  wipe(prog(t,23.7,24.3));
+  const fl=1-prog(t,16,16.25); if(t>=16&&fl>0){ctx.fillStyle=`rgba(255,255,255,${fl*0.7})`;ctx.fillRect(0,0,W,H);}
+};
+</script>
+</body></html>

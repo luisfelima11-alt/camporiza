@@ -1,0 +1,16 @@
+{
+  "name": "camporiza-reels-hora-de-plantar",
+  "private": true,
+  "type": "module",
+  "description": "Modelo de Reels 30s (1080x1920) da Camporiza, renderizado em código.",
+  "scripts": {
+    "previa": "node render.mjs stills 2.9 5.9 10.5 17.5 23 28",
+    "video": "node render.mjs video saida/video_mudo.mp4",
+    "final": "ffmpeg -y -loglevel error -i saida/video_mudo.mp4 -i assets/trilha.m4a -c:v copy -c:a copy -shortest -movflags +faststart saida/reels-final.mp4",
+    "build": "npm run video && npm run final",
+    "trilha": "python3 trilha.py saida/trilha.wav"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
