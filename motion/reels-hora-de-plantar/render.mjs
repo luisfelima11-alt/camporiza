@@ -9,7 +9,8 @@ const dir = path.dirname(new URL(import.meta.url).pathname);
 const [mode, ...args] = process.argv.slice(2);
 const FPS = 30, DUR = 30;
 
-const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
+// CHROMIUM_PATH: caminho opcional de um Chromium já instalado (útil quando a versão do Playwright não bate)
+const browser = await chromium.launch({ args: ['--allow-file-access-from-files'], executablePath: process.env.CHROMIUM_PATH || undefined });
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 await page.goto('file://' + path.join(dir, 'reels.html'));
 await page.evaluate(() => window.ready);
